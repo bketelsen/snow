@@ -13,6 +13,13 @@ bump:
 clean:
   mkosi clean -ff
 
+deep-clean:
+  mkosi clean -ff
+  rm -rf ./mkosi.cache
+  rm -rf .mkosi-private
+  rm -rf ./mkosi.tools
+  rm -rf ./mkosi.tools.manifest
+
 launch:
   ./scripts/launch.sh
 
