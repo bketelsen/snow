@@ -1,6 +1,3 @@
-# Justfile
-# Converted from Makefile
-
 # Default recipe
 default: images
 
