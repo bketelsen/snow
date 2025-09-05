@@ -100,3 +100,9 @@ systemd-homed is unable to resize the home directory.
 If you boot SNOW in a virtual machine using `mkosi vm`, the root password
 is automatically set to `particleos` and a default user `particleos` with password
 `particleos` is created as well.
+
+## Credits
+
+- SNOW name: Kyle Gospodnetich
+- Idea, Inspiration, 99% of code: [systemd/particleos](https://github.com/systemd/particleos)
+- Answering too many questions: Luca Boccassi
