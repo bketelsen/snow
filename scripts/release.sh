@@ -1,0 +1,23 @@
+#!/bin/bash
+
+repo=$1
+release=$2
+package=$3
+
+if [ -z "$repo" ] || [ -z "$release" ] || [ -z "$package" ]; then
+    echo "Usage: $0 <repository-url> <release-name> <package-name>"
+    exit 1
+fi
+
+
+file=$(mktemp)
+
+
+# download the Packages.gz file for the specified release and repository
+wget -o /dev/null -O $file $repo/dists/$release/main/binary-amd64/Packages.gz
+
+# extract the available versions, filter for the package, print the version, then sort and get the latest one
+
+version=$(gunzip -qc $file | grep -A 10 "^Package: $package$" | awk '/Version/ { print $2 }' | sort -V | tail -n 1)
+echo "$version"
+rm $file
