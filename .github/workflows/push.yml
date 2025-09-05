@@ -1,0 +1,28 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup-mkosi
+        uses: systemd/mkosi@d45142e329550abc9c6fc63c1f1f86e5286d3d67
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: version
+        run: |
+          mkosi --version
+      - name: summary
+        run: |
+          mkosi summary --no-pager
+      - name: build
+        run: |
+          mkosi build --compress-output=yes
+
+      - name: list artifacts
+        run: |
+          ls -la mkosi.output

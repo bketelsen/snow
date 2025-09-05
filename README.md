@@ -1,5 +1,7 @@
 # SNOW is Not Only Windows
 
+**DO NOT USE THIS YET. Seriously. Just Don't.**
+
 SNOW is a fully customizable immutable Linux distribution implementing the
 concepts described in
 [Fitting Everything Together](https://0pointer.net/blog/fitting-everything-together.html).
@@ -29,23 +31,6 @@ To update the system after installation, you clone the SNOW repository
 or your fork of it, make sure `mkosi.local.conf` is configured to your liking and
 run `mkosi -B -ff sysupdate -- update --reboot` which will update the system using
 `systemd-sysupdate` and then reboot.
-
-## Signing keys
-
-SNOW images are signed for Secure Boot with the user's keys. To generate a new key,
-run `mkosi genkey`. The key must be stored safely, it will be required to sign updates.
-
-The key can be stored in a smartcard. Then you have to set the key in `mkosi.local.conf`:
-
-```
-[Validation]
-SecureBootKey=pkcs11:object=Private key 1;type=private
-SecureBootKeySource=provider:pkcs11
-SignExpectedPcrKey=pkcs11:object=Private key 1;type=private
-SignExpectedPcrKeySource=provider:pkcs11
-VerityKey=pkcs11:object=Private key 1;type=private
-VerityKeySource=provider:pkcs11
-```
 
 ## Installation
 
