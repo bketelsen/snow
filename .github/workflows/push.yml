@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup-mkosi
-        uses: systemd/mkosi@d45142e329550abc9c6fc63c1f1f86e5286d3d67
+        uses: systemd/mkosi@main
       - name: checkout repo
         uses: actions/checkout@main
       - name: save secret to file
@@ -32,7 +32,7 @@ jobs:
           mkosi summary --no-pager
       - name: build
         run: |
-          mkosi build --compress-output=yes
+          mkosi build --compress-output=yes --debug
 
       - name: list artifacts
         run: |
