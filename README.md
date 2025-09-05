@@ -23,6 +23,18 @@ The SNOW image is built using [mkosi](https://github.com/systemd/mkosi).
 You will need to install the current main branch of mkosi to build current
 SNOW images.
 
+## Opinions
+
+SNOW has some strong opinions:
+
+- Debian Trixie base
+- SystemD @ main
+- Zabbly Kernel with ZFS enabled (no zfs boot support)
+- Minimal but usable Gnome installation
+- Flatpak enabled
+- Immutable with A/B updates
+- Extras installed via systemd-sysext
+
 ## Building
 
 To build the image, run `mkosi -B -f` from the SNOW repository.

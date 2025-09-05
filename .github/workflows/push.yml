@@ -13,6 +13,14 @@ jobs:
         uses: systemd/mkosi@d45142e329550abc9c6fc63c1f1f86e5286d3d67
       - name: checkout repo
         uses: actions/checkout@main
+      - name: save secret to file
+        run: |
+          echo $MKOSI_KEY > mkosi.key
+          echo $MKOSI_CRT > mkosi.crt
+        env:
+          MKOSI_KEY: ${{ secrets.MKOSI_KEY }}
+          MKOSI_CRT: ${{ secrets.MKOSI_CRT }}
+
       - name: version
         run: |
           mkosi --version
