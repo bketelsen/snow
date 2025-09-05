@@ -1,7 +1,7 @@
 # Default recipe
-default: images
+default: build
 
-images:
+build:
   mkosi build
 
 bump:
