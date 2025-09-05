@@ -19,6 +19,9 @@ jobs:
           echo $MKOSI_CRT > mkosi.crt
           chmod 600 mkosi.key
           ls -la mkosi.key mkosi.crt
+          sed -i ':a;/^[ \n]*$/{$d;N;ba}' mkosi.crt
+          sed -i ':a;/^[ \n]*$/{$d;N;ba}' mkosi.key
+          echo "SHA256 sums of the key and cert files:"
           sha256sum mkosi.crt
           sha256sum mkosi.key
           pwd
