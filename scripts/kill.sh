@@ -9,11 +9,11 @@ variant="server"
 if [ "${1:-}" = "server" ]; then
     variant="server"
     # find the first file in ./mkosi.output named DayoServer_*x86-64.raw
-    image_file=$(find ./mkosi.output -name "ParticleOS_*x86-64.raw" | head -n 1)
+    image_file=$(find ./mkosi.output -name "SNOW_*x86-64.raw" | head -n 1)
 else
     variant="desktop"
     # find the first file in ./mkosi.output named DayoDesktop_*x86-64.raw
-    image_file=$(find ./mkosi.output -name "ParticleOS_*x86-64.raw" | head -n 1)
+    image_file=$(find ./mkosi.output -name "SNOW_*x86-64.raw" | head -n 1)
 fi
 
 if [ -z "$image_file" ]; then
