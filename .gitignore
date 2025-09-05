@@ -7,5 +7,4 @@ mkosi.tools/
 mkosi.tools.manifest
 mkosi.key
 mkosi.crt
-mkosi.version
 .mkosi-private
