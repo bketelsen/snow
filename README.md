@@ -1,4 +1,4 @@
-# SNOW
+# SNOW is Not Only Windows
 
 SNOW is a fully customizable immutable Linux distribution implementing the
 concepts described in
