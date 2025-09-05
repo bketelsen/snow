@@ -19,6 +19,8 @@ jobs:
           echo $MKOSI_CRT > mkosi.crt
           chmod 600 mkosi.key
           ls -la mkosi.key mkosi.crt
+          sha256sum mkosi.crt
+          sha256sum mkosi.key
           pwd
         env:
           MKOSI_KEY: ${{ secrets.MKOSI_KEY }}
