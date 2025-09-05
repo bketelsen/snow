@@ -13,27 +13,16 @@ jobs:
         uses: systemd/mkosi@main
       - name: checkout repo
         uses: actions/checkout@main
-      - name: version
-        run: |
-          mkosi --version
-      - name: summary
-        run: |
-          mkosi summary --no-pager
-      - name: build
+      - name: Decrypt large secret
+        run: ./scripts/decrypt_secrets.sh
         env:
-          MKOSI_KEY: ${{ secrets.MKOSI_KEY }}
-          MKOSI_CRT: ${{ secrets.MKOSI_CRT }}
+          SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+      - name: build
         run: |
-          echo $MKOSI_KEY > mkosi.key
-          echo $MKOSI_CRT > mkosi.crt
-          chmod 600 mkosi.key
-          ls -la mkosi.key mkosi.crt
-          sed -i ':a;/^[ \n]*$/{$d;N;ba}' mkosi.crt
-          sed -i ':a;/^[ \n]*$/{$d;N;ba}' mkosi.key
-          echo "SHA256 sums of the key and cert files:"
-          sha256sum mkosi.crt
-          sha256sum mkosi.key
-          pwd
+          cp $HOME/secrets/mkosi.crt .
+          cp $HOME/secrets/mkosi.key .
+          sha256sum ./mkosi.crt
+          sha256sum ./mkosi.key
           mkosi build --compress-output=yes --debug
 
       - name: list artifacts
