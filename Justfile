@@ -4,6 +4,9 @@ default: build
 build:
   mkosi build
 
+build-compress:
+  mkosi build --compress-output=yes
+
 bump:
   mkosi bump
 
