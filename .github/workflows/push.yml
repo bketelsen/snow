@@ -17,6 +17,7 @@ jobs:
         run: |
           echo $MKOSI_KEY > mkosi.key
           echo $MKOSI_CRT > mkosi.crt
+          chmod 600 mkosi.key mkosi.crt
         env:
           MKOSI_KEY: ${{ secrets.MKOSI_KEY }}
           MKOSI_CRT: ${{ secrets.MKOSI_CRT }}
