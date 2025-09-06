@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Windows logo color mask -->
+    <mask id="windowsMask">
+      <rect width="256" height="256" fill="black"/>
+      <rect x="0" y="0" width="128" height="128" fill="white"/>
+      <rect x="128" y="0" width="128" height="128" fill="white"/>
+      <rect x="0" y="128" width="128" height="128" fill="white"/>
+      <rect x="128" y="128" width="128" height="128" fill="white"/>
+    </mask>
+  </defs>
+
+  <g>
+    <!-- Main snowflake arms with crystallization -->
+    <g stroke-linecap="round" stroke-linejoin="round">
+
+      <!-- Primary arms (6 main directions) -->
+      <!-- Vertical arm (top half - red quadrant) -->
+      <line x1="128" y1="20" x2="128" y2="128" stroke="#F25022" stroke-width="8"/>
+      <!-- Vertical arm (bottom half - green quadrant) -->
+      <line x1="128" y1="128" x2="128" y2="236" stroke="#7FBA00" stroke-width="8"/>
+
+      <!-- Horizontal arm (left half - blue quadrant) -->
+      <line x1="20" y1="128" x2="128" y2="128" stroke="#00A4EF" stroke-width="8"/>
+      <!-- Horizontal arm (right half - yellow quadrant) -->
+      <line x1="128" y1="128" x2="236" y2="128" stroke="#FFB900" stroke-width="8"/>
+
+      <!-- Diagonal arms (northeast/southwest) -->
+      <line x1="56" y1="56" x2="128" y2="128" stroke="#F25022" stroke-width="8"/>
+      <line x1="128" y1="128" x2="200" y2="200" stroke="#FFB900" stroke-width="8"/>
+
+      <!-- Diagonal arms (northwest/southeast) -->
+      <line x1="200" y1="56" x2="128" y2="128" stroke="#7FBA00" stroke-width="8"/>
+      <line x1="128" y1="128" x2="56" y2="200" stroke="#00A4EF" stroke-width="8"/>
+
+      <!-- Crystallization branches on each arm -->
+      <!-- Top arm branches -->
+      <line x1="128" y1="40" x2="140" y2="52" stroke="#F25022" stroke-width="3"/>
+      <line x1="128" y1="40" x2="116" y2="52" stroke="#F25022" stroke-width="3"/>
+      <line x1="128" y1="60" x2="140" y2="72" stroke="#F25022" stroke-width="3"/>
+      <line x1="128" y1="60" x2="116" y2="72" stroke="#F25022" stroke-width="3"/>
+
+      <!-- Bottom arm branches -->
+      <line x1="128" y1="216" x2="140" y2="204" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="128" y1="216" x2="116" y2="204" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="128" y1="196" x2="140" y2="184" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="128" y1="196" x2="116" y2="184" stroke="#7FBA00" stroke-width="3"/>
+
+      <!-- Left arm branches -->
+      <line x1="40" y1="128" x2="52" y2="116" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="40" y1="128" x2="52" y2="140" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="60" y1="128" x2="72" y2="116" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="60" y1="128" x2="72" y2="140" stroke="#00A4EF" stroke-width="3"/>
+
+      <!-- Right arm branches -->
+      <line x1="216" y1="128" x2="204" y2="116" stroke="#FFB900" stroke-width="3"/>
+      <line x1="216" y1="128" x2="204" y2="140" stroke="#FFB900" stroke-width="3"/>
+      <line x1="196" y1="128" x2="184" y2="116" stroke="#FFB900" stroke-width="3"/>
+      <line x1="196" y1="128" x2="184" y2="140" stroke="#FFB900" stroke-width="3"/>
+
+      <!-- Diagonal arm branches (northeast) -->
+      <line x1="72" y1="72" x2="64" y2="80" stroke="#F25022" stroke-width="3"/>
+      <line x1="72" y1="72" x2="80" y2="64" stroke="#F25022" stroke-width="3"/>
+      <line x1="88" y1="88" x2="80" y2="96" stroke="#F25022" stroke-width="3"/>
+      <line x1="88" y1="88" x2="96" y2="80" stroke="#F25022" stroke-width="3"/>
+
+      <!-- Diagonal arm branches (southwest) -->
+      <line x1="184" y1="184" x2="176" y2="192" stroke="#FFB900" stroke-width="3"/>
+      <line x1="184" y1="184" x2="192" y2="176" stroke="#FFB900" stroke-width="3"/>
+      <line x1="168" y1="168" x2="160" y2="176" stroke="#FFB900" stroke-width="3"/>
+      <line x1="168" y1="168" x2="176" y2="160" stroke="#FFB900" stroke-width="3"/>
+
+      <!-- Diagonal arm branches (northwest) -->
+      <line x1="184" y1="72" x2="192" y2="80" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="184" y1="72" x2="176" y2="64" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="168" y1="88" x2="176" y2="96" stroke="#7FBA00" stroke-width="3"/>
+      <line x1="168" y1="88" x2="160" y2="80" stroke="#7FBA00" stroke-width="3"/>
+
+      <!-- Diagonal arm branches (southeast) -->
+      <line x1="72" y1="184" x2="64" y2="176" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="72" y1="184" x2="80" y2="192" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="88" y1="168" x2="80" y2="160" stroke="#00A4EF" stroke-width="3"/>
+      <line x1="88" y1="168" x2="96" y2="176" stroke="#00A4EF" stroke-width="3"/>
+    </g>
+
+    <!-- Center core with crystalline pattern -->
+    <circle cx="128" cy="128" r="20" fill="white" stroke="#E8E8E8" stroke-width="2"/>
+    <circle cx="128" cy="128" r="12" fill="none" stroke="#D0D0D0" stroke-width="1"/>
+    <circle cx="128" cy="128" r="6" fill="none" stroke="#B8B8B8" stroke-width="1"/>
+  </g>
+</svg>
