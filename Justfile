@@ -7,6 +7,9 @@ build:
 build-compress:
   mkosi build --compress-output=yes
 
+build-ext extension:
+  mkosi build --profile=sysext-only --dependency={{extension}}
+
 bump:
   mkosi bump
 
