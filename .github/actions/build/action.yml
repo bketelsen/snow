@@ -17,6 +17,11 @@ runs:
   steps:
     - name: setup-mkosi
       uses: systemd/mkosi@main
+    - name: Decrypt large secret
+      shell: bash
+      run: ./scripts/decrypt_secrets.sh
+      env:
+        SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
     - name: "Build sysext"
       env:
         SYSEXT: ${{ inputs.sysext }}
