@@ -1,0 +1,139 @@
+name: "Build and publish a sysext"
+description: "Build and publish a systemd system extension under a versioned release"
+inputs:
+  sysext:
+    description: "The sysext to build"
+    required: true
+
+
+# This composite action needs the following environment variables to be set at
+# the workflow or job level:
+# - RELEASEURL: Mandatory, needed to fetch older releases
+# - FORCE_REBUILD: Optional, used to force sysext's rebuild (and publication)
+# Adapted from https://github.com/travier/fedora-sysexts, MIT License
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Build sysext"
+      env:
+        SYSEXT: ${{ inputs.sysext }}
+        PR: ${{ github.event_name == 'pull_request' }}
+      shell: bash
+      run: |
+        set -euxo pipefail
+
+        pushd "${SYSEXT}"
+
+        # For PRs, only build if the content changed
+        if [[ "${PR}" == "true" ]]; then
+            diff="$(
+              git diff origin/main HEAD --stat -- . ; \
+            )"
+            if [[ -z "${diff}" ]]; then
+                echo "Skipping: No changes for this sysext in this PR"
+                exit 0
+            fi
+            echo "Detected changes for this sysext in this PR. Building."
+              mkosi build --profile=sysext-only --dependency=${IMAGE}
+            exit 0
+        fi
+        popd
+
+        # Check if we are asked to force a rebuild
+        if [ -n ${FORCE_REBUILD+x} ]; then
+            if [[ "${FORCE_REBUILD}" == true ]]; then
+                echo "Building (forced rebuild)"
+                  mkosi build --profile=sysext-only --dependency=${IMAGE}
+                exit 0
+            fi
+        fi
+
+        # Always build, but only release if the inputs changed
+        mkosi build --profile=sysext-only --dependency=${IMAGE}
+
+        VERSION_ID=$(cat ./mkosi.output/${IMAGE}_*.manifest | jq -r '.extension.VERSION_ID')
+        VERSION=$(cat ./mkosi.output/${IMAGE}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+        if [[ "$(uname -m)" == "x86_64" ]]; then
+            ARCH="x86-64"
+        elif [[ "$(uname -m)" == "aarch64" ]]; then
+            ARCH="arm64"
+        else
+            echo "Unsupported architecture"
+            exit 1
+        fi
+        find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+        new="$(cat ./mkosi.output/inputs)"
+
+        TAGNAME="${SYSEXT}-${VERSION}"
+
+        echo "Fetching info from existing release: ${TAGNAME}"
+        curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+        old="$(cat inputs.old)"
+
+        # only proceed if the inputs changed
+
+        if [[ "${new}" == "${old}" ]]; then
+          echo "No changes in inputs since last release. Skipping."
+          exit 0
+        fi
+        echo ${VERSION} > ./mkosi.output/version
+        echo ${VERSION_ID} > ./mkosi.output/version_id
+        echo ${ARCH} > ./mkosi.output/arch
+        echo ${TAGNAME} > ./mkosi.output/tagname
+        cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+        # remove the "*" character from the SHA256SUMS file
+        sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+        echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+
+    - name: "Publish sysext if changed"
+      env:
+        SYSEXT: ${{ inputs.sysext }}
+        GH_TOKEN: ${{ github.token }}
+      if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+      shell: bash
+      run: |
+        set -euxo pipefail
+
+        git config --global --add safe.directory "${PWD}"
+
+        cd "mkosi.output"
+
+        VERSION="$(cat ./version)"
+        VERSION_ID="$(cat ./version_id)"
+        ARCH="$(cat ./arch)"
+        TAGNAME="$(cat ./tagname)"
+
+        if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          echo "No sysext built. Skipping."
+          exit 0
+        fi
+
+        echo "Creating new release for: ${TAGNAME}"
+
+        {
+        echo "Release:"
+        echo "\`\`\`"
+        cat ./SHA256SUMS
+        echo "\`\`\`"
+        echo ""
+        echo "Built using input files:"
+        echo "\`\`\`"
+        cat ./inputs
+        echo "\`\`\`"
+        } > notes
+
+        gh release delete \
+          --cleanup-tag \
+          --yes \
+          "${TAGNAME}" \
+          || true
+
+        gh release create \
+          --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+          --notes-file notes \
+          "${TAGNAME}" \
+          --latest=false \
+          ./*.raw ./SHA256SUMS ./inputs
