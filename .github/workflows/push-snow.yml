@@ -1,0 +1,1353 @@
+env:
+  GH_TOKEN: ${{ github.token }}
+  RELEASEURL: "https://github.com/${{ github.repository }}/releases/download"
+
+on:
+  pull_request:
+    branches:
+      - "main"
+  push:
+    branches:
+      - "main"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      force-rebuild:
+        description: "Force rebuild"
+        required: true
+        default: false
+        type: boolean
+
+# Needed to allow creating a release
+permissions:
+  contents: write
+
+# Prevent multiple workflow runs from racing to ensure that pushes are made
+# sequentialy for the main branch. Also cancel in progress workflow runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup-mkosi
+        uses: systemd/mkosi@main
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: Decrypt large secret
+        run: ./scripts/decrypt_secrets.sh
+        env:
+          SECRET_PASSPHRASE: ${{ secrets.SECRET_PASSPHRASE }}
+      - name: build
+        run: |
+          cp $HOME/secrets/mkosi.crt .
+          cp $HOME/secrets/mkosi.key .
+          sha256sum ./mkosi.crt
+          sha256sum ./mkosi.key
+          chmod 600 ./mkosi.key
+          mkosi build --compress-output=yes
+          ARCH=$(cat ./mkosi.output/arch)
+          VERSION_ID=$(cat ./mkosi.output/version_id)
+          cp ./mkosi.output/base.manifest ./mkosi.output/SNOW_${VERSION_ID}_${ARCH}.manifest
+
+      - name: list artifacts
+        run: |
+          ls -la mkosi.output
+      - name: Upload Artifact - Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: SNOW.raw.zst
+          path: mkosi.output/SNOW_*.raw.zst
+      - name: "Build sysext: sysext-qemu-agent"
+        env:
+          SYSEXT: sysext-qemu-agent
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: confext-qemu-agent"
+        env:
+          SYSEXT: confext-qemu-agent
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: confext-chromium"
+        env:
+          SYSEXT: confext-chromium
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-chromium"
+        env:
+          SYSEXT: sysext-chromium
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: confext-podman"
+        env:
+          SYSEXT: confext-podman
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-podman"
+        env:
+          SYSEXT: sysext-podman
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-virt-viewer"
+        env:
+          SYSEXT: sysext-virt-viewer
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-dev"
+        env:
+          SYSEXT: sysext-dev
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-edge"
+        env:
+          SYSEXT: sysext-edge
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+      - name: "Build sysext: sysext-code"
+        env:
+          SYSEXT: sysext-code
+          PR: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf mkosi.output/inputs
+          rm -rf mkosi.output/version
+          rm -rf mkosi.output/version_id
+          rm -rf mkosi.output/arch
+          rm -rf mkosi.output/tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # Always build, but only release if the inputs changed
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+              ARCH="x86-64"
+          elif [[ "$(uname -m)" == "aarch64" ]]; then
+              ARCH="arm64"
+          else
+              echo "Unsupported architecture"
+              exit 1
+          fi
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+
+          new="$(cat ./mkosi.output/inputs)"
+
+          TAGNAME="${SYSEXT}-${VERSION}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat "${SYSEXT}_*.SHA256SUMS" > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: ${{ inputs.sysext }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+          VERSION="$(cat ./version)"
+          VERSION_ID="$(cat ./version_id)"
+          ARCH="$(cat ./arch)"
+          TAGNAME="$(cat ./tagname)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./*.raw ./SHA256SUMS ./inputs
+
+  publish-sysexts:
+    runs-on: "ubuntu-24.04"
+
+
+    # Use `always()` to still run if any dependent job fails
+    if: ${{ always() && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Gather all sysexts releases"
+        uses: ./.github/actions/gather
+        with:
+          sysexts: 'confext-chromium;confext-podman;confext-qemu-agent;sysext-chromium;sysext-code;sysext-dev;sysext-edge;sysext-podman;sysext-qemu-agent;sysext-virt-viewer;'
