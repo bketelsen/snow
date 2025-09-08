@@ -37,7 +37,7 @@ runs:
             fi
             popd
             echo "Detected changes for this sysext in this PR. Building."
-              mkosi build --profile=sysext-only --dependency=${IMAGE}
+              mkosi build --profile=sysext-only --dependency=${SYSEXT}
             exit 0
         fi
 
@@ -45,16 +45,16 @@ runs:
         if [ -n ${FORCE_REBUILD+x} ]; then
             if [[ "${FORCE_REBUILD}" == true ]]; then
                 echo "Building (forced rebuild)"
-                  mkosi build --profile=sysext-only --dependency=${IMAGE}
+                  mkosi build --profile=sysext-only --dependency=${SYSEXT}
                 exit 0
             fi
         fi
 
         # Always build, but only release if the inputs changed
-        mkosi build --profile=sysext-only --dependency=${IMAGE}
+        mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
-        VERSION_ID=$(cat ./mkosi.output/${IMAGE}_*.manifest | jq -r '.extension.VERSION_ID')
-        VERSION=$(cat ./mkosi.output/${IMAGE}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+        VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
+        VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
         if [[ "$(uname -m)" == "x86_64" ]]; then
             ARCH="x86-64"
         elif [[ "$(uname -m)" == "aarch64" ]]; then
