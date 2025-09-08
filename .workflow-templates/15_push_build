@@ -71,7 +71,7 @@
           echo ${VERSION_ID} > ./mkosi.output/version_id
           echo ${ARCH} > ./mkosi.output/arch
           echo ${TAGNAME} > ./mkosi.output/tagname
-          cat ${SYSEXT}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
+          cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
 
