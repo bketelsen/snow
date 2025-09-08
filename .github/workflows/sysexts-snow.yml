@@ -1,0 +1,214 @@
+name: "Build sysexts for SNOW"
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  RELEASEURL: "https://github.com/${{ github.repository }}/releases/download"
+
+on:
+  pull_request:
+    branches:
+      - "main"
+  push:
+    branches:
+      - "main"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      force-rebuild:
+        description: "Force rebuild of all sysexts"
+        required: true
+        default: false
+        type: boolean
+
+# Needed to allow creating a release
+permissions:
+  contents: write
+
+# Prevent multiple workflow runs from racing to ensure that pushes are made
+# sequentialy for the main branch. Also cancel in progress workflow runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ inputs.sysext }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Sysexts build jobs for images: sysext-qemu-agent confext-qemu-agent confext-chromium sysext-chromium confext-podman sysext-podman sysext-virt-viewer sysext-dev sysext-edge sysext-code
+  build-sysext-qemu-agent:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-qemu-agent"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-qemu-agent"
+
+  build-confext-qemu-agent:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: confext-qemu-agent"
+        uses: ./.github/actions/build
+        with:
+          sysext: "confext-qemu-agent"
+
+  build-confext-chromium:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: confext-chromium"
+        uses: ./.github/actions/build
+        with:
+          sysext: "confext-chromium"
+
+  build-sysext-chromium:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-chromium"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-chromium"
+
+  build-confext-podman:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: confext-podman"
+        uses: ./.github/actions/build
+        with:
+          sysext: "confext-podman"
+
+  build-sysext-podman:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-podman"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-podman"
+
+  build-sysext-virt-viewer:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-virt-viewer"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-virt-viewer"
+
+  build-sysext-dev:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-dev"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-dev"
+
+  build-sysext-edge:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-edge"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-edge"
+
+  build-sysext-code:
+    runs-on: "ubuntu-24.04"
+    env:
+      FORCE_REBUILD: ${{ inputs.force-rebuild }}
+    steps:
+      - name: "Checkout repo"
+        uses: actions/checkout@v4
+
+      - name: "Mark directory as safe"
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: "Build sysext: sysext-code"
+        uses: ./.github/actions/build
+        with:
+          sysext: "sysext-code"
