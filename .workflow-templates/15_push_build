@@ -2,6 +2,7 @@
         env:
           SYSEXT: %%SYSEXT%%
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail

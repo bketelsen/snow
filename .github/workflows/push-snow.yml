@@ -66,6 +66,7 @@ jobs:
         env:
           SYSEXT: sysext-qemu-agent
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -193,6 +194,7 @@ jobs:
         env:
           SYSEXT: confext-qemu-agent
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -320,6 +322,7 @@ jobs:
         env:
           SYSEXT: confext-chromium
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -447,6 +450,7 @@ jobs:
         env:
           SYSEXT: sysext-chromium
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -574,6 +578,7 @@ jobs:
         env:
           SYSEXT: confext-podman
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -701,6 +706,7 @@ jobs:
         env:
           SYSEXT: sysext-podman
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -828,6 +834,7 @@ jobs:
         env:
           SYSEXT: sysext-virt-viewer
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -955,6 +962,7 @@ jobs:
         env:
           SYSEXT: sysext-dev
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -1082,6 +1090,7 @@ jobs:
         env:
           SYSEXT: sysext-edge
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -1209,6 +1218,7 @@ jobs:
         env:
           SYSEXT: sysext-code
           PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
         run: |
           set -euxo pipefail
