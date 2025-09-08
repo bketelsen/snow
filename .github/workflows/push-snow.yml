@@ -106,7 +106,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -234,7 +240,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -362,7 +374,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -490,7 +508,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -618,7 +642,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -746,7 +776,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -874,7 +910,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -1002,7 +1044,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -1130,7 +1178,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
@@ -1258,7 +1312,13 @@ jobs:
           mkosi build --profile=sysext-only --dependency=${SYSEXT}
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
-          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
+          if [[ "${SYSCON}" = "confext" ]]; then
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          else
+              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+
+          fi
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then
