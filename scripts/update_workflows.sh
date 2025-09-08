@@ -36,7 +36,7 @@ main() {
 
 
 
-    readarray -t sysexts < <(./scripts/extensions.sh)
+    readarray -t sysexts < <(./scripts/extensions.sh | sort)
 
     for image in "${sysexts[@]}"; do
 
