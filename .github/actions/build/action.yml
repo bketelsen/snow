@@ -23,10 +23,11 @@ runs:
       run: |
         set -euxo pipefail
 
-        pushd "${SYSEXT}"
 
         # For PRs, only build if the content changed
         if [[ "${PR}" == "true" ]]; then
+            pushd "mkosi.images/${SYSEXT}"
+
             diff="$(
               git diff origin/main HEAD --stat -- . ; \
             )"
@@ -34,11 +35,11 @@ runs:
                 echo "Skipping: No changes for this sysext in this PR"
                 exit 0
             fi
+            popd
             echo "Detected changes for this sysext in this PR. Building."
               mkosi build --profile=sysext-only --dependency=${IMAGE}
             exit 0
         fi
-        popd
 
         # Check if we are asked to force a rebuild
         if [ -n ${FORCE_REBUILD+x} ]; then
