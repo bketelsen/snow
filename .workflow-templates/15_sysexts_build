@@ -1,0 +1,4 @@
+      - name: "Build sysext: %%SYSEXT%%"
+        uses: ./.github/actions/build
+        with:
+          sysext: '%%SYSEXT%%'
