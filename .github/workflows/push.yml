@@ -12,12 +12,6 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
-    inputs:
-      force-rebuild:
-        description: "Force rebuild of all sysexts"
-        required: true
-        default: false
-        type: boolean
 
 # Needed to allow creating a release
 permissions:
@@ -49,7 +43,10 @@ jobs:
           sha256sum ./mkosi.crt
           sha256sum ./mkosi.key
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes --debug
+          mkosi build --compress-output=yes
+          ARCH=$(cat ./mkosi.output/arch)
+          VERSION_ID=$(cat ./mkosi.output/version_id)
+          cp ./mkosi.output/base.manifest ./mkosi.output/SNOW_${VERSION_ID}_${ARCH}.manifest
 
       - name: list artifacts
         run: |
