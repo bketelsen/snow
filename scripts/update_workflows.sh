@@ -36,6 +36,7 @@ main() {
 
     cat "${tmpl}/05_push_build"
 
+    cat "${tmpl}/06_push_named"
 
     readarray -t sysexts < <(./scripts/extensions.sh | sort)
 

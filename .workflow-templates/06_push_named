@@ -1,0 +1,64 @@
+      - name: "named release for SNOW Linux"
+        env:
+          PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -f ./SHA256SUMS*
+          gh release list --limit 2000 --json tagName > releases.json
+
+          releases=(
+            $(
+              cat releases.json \
+                | jq --arg OS "SNOW" --raw-output '
+                  map(
+                    select(
+                      (.tagName | startswith($OS))
+                      and
+                      (.tagName != $OS)
+                    )
+                  )
+                  | .[].tagName
+                ' \
+                | sort -h
+            )
+          )
+
+          echo "Looking at releases: ${releases[@]}"
+          for rel in ${releases[@]}; do
+            echo "Fetching SHA256SUMS for release: ${rel}"
+            curl --location --fail --output "SHA256SUMS.${rel}" "${RELEASEURL}/${rel}/SHA256SUMS" || touch "SHA256SUMS.${rel}"
+          done
+          ls ./SHA256SUMS.* | sort -h | xargs cat > SHA256SUMS
+          new="$(cat SHA256SUMS | sha256sum)"
+
+          old=""
+          echo "Fetching SHA256SUMS from release: ${sysext}"
+          curl --location --fail --output SHA256SUMS.old "${RELEASEURL}/${sysext}/SHA256SUMS" || touch SHA256SUMS.old
+          old="$(cat SHA256SUMS.old | sha256sum)"
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes for SNOW since last release. Skipping."
+          else
+            echo "Creating new release: SNOW"
+
+            {
+            echo "Versions available:"
+            echo "\`\`\`"
+            cat ./SHA256SUMS
+            echo "\`\`\`"
+            } > notes
+
+            gh release delete \
+              --cleanup-tag \
+              --yes \
+              "SNOW" \
+              || true
+
+            gh release create \
+              --title "SNOW Linux" \
+              --notes-file notes \
+              "SNOW" \
+              --latest=false \
+              ./SHA256SUMS
+          fi
