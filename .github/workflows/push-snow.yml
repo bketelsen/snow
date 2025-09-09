@@ -63,15 +63,6 @@ jobs:
 
 
 
-          # Check if we are asked to force a rebuild
-          if [ -n ${FORCE_REBUILD+x} ]; then
-              if [[ "${FORCE_REBUILD}" == true ]]; then
-                  echo "Building (forced rebuild)"
-                    mkosi build
-                  exit 0
-              fi
-          fi
-
           IMAGE_ID=$(cat ./mkosi.output/image_id)
 
 
@@ -95,15 +86,50 @@ jobs:
             echo "No changes in inputs since last release. Skipping."
             exit 0
           fi
-          echo ${VERSION} > ./mkosi.output/version
-          echo ${VERSION_ID} > ./mkosi.output/version_id
-          echo ${ARCH} > ./mkosi.output/arch
-          echo ${TAGNAME} > ./mkosi.output/tagname
+
           cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
 
           echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+
+
+          VERSION_ID="$(cat ./${IMAGE_ID}.version_id)"
+
+          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+          cp ./${IMAGE_ID}.SHA256SUMS ./SHA256SUMS
+          echo "Creating new release for: ${TAGNAME}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./${IMAGE_ID}.inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${IMAGE_ID} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./${TAGNAME}.raw ./SHA256SUMS ./inputs
       - name: "Maybe publish sysext: confext-chromium"
         env:
           SYSEXT: confext-chromium
