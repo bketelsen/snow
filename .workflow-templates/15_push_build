@@ -43,12 +43,17 @@
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
           SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
-          if [[ "${SYSCON}" = "confext" ]]; then
-              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
-          else
-              VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
+          # if [[ "${SYSCON}" = "confext" ]]; then
+          #     VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.CONFEXT_VERSION_ID')
+          # else
+          #     VERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.SYSEXT_VERSION_ID')
 
-          fi
+          # fi
+          KEYPACKAGE=$(cat ./mkosi.output/${SYSEXT}.keypackage || echo "NIL")
+          echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
+          KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.packages[] | select (.name = "${KEYPACKAGE}") | .version')
+          VERSION=$(cat ./mkosi.output/${SYSEXT}_*.version_id)
+          echo "VERSION for ${SYSEXT} is: ${VERSION}"
           if [[ "$(uname -m)" == "x86_64" ]]; then
               ARCH="x86-64"
           elif [[ "$(uname -m)" == "aarch64" ]]; then

@@ -6,4 +6,5 @@ set -e
 
 echo $IMAGE_VERSION > "$OUTPUTDIR/$IMAGE_ID.version_id"
 
+echo "NIL" > "$OUTPUTDIR/$IMAGE_ID.keypackage"
 
