@@ -129,7 +129,14 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./inputs
+            ./${TAGNAME}.raw.zst \
+            ./${TAGNAME}.efi \
+            ./${TAGNAME}.esp.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64.*.raw.zst \
+            ./SHA256SUMS \
+            ./inputs
       - name: "Maybe publish sysext: sysext-code"
         env:
           SYSEXT: sysext-code
