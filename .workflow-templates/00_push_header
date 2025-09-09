@@ -52,4 +52,4 @@ jobs:
           mkosi build --compress-output=yes
           ARCH=$(cat ./mkosi.output/arch)
           VERSION_ID=$(cat ./mkosi.output/version_id)
-          cp ./mkosi.output/base.manifest ./mkosi.output/SNOW_${VERSION_ID}_${ARCH}.manifest
+          cp ./mkosi.output/base.manifest ./mkosi.output/SNOW.manifest
