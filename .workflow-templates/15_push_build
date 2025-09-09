@@ -39,8 +39,7 @@
               fi
           fi
 
-          # Always build, but only release if the inputs changed
-          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+          # Only release if the inputs changed
 
           VERSION_ID=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.extension.VERSION_ID')
           SYSCON=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r '.config.output_format')
