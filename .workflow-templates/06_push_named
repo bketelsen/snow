@@ -34,8 +34,8 @@
           new="$(cat SHA256SUMS | sha256sum)"
 
           old=""
-          echo "Fetching SHA256SUMS from release: ${sysext}"
-          curl --location --fail --output SHA256SUMS.old "${RELEASEURL}/${sysext}/SHA256SUMS" || touch SHA256SUMS.old
+          echo "Fetching SHA256SUMS from release: SNOW"
+          curl --location --fail --output SHA256SUMS.old "${RELEASEURL}/SNOW/SHA256SUMS" || touch SHA256SUMS.old
           old="$(cat SHA256SUMS.old | sha256sum)"
           if [[ "${new}" == "${old}" ]]; then
             echo "No changes for SNOW since last release. Skipping."
