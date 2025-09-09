@@ -214,6 +214,7 @@ jobs:
           echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
+          echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
@@ -243,6 +244,8 @@ jobs:
           VERSION_ID="$(cat ./${SYSEXT}.version_id)"
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
+          KEYPACKAGE="$(cat ./${SYSEXT}.keypackage || echo "N/A")"
+          KEYVERSION="$(cat ./${SYSEXT}.keyversion || echo "N/A")"
 
           if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
@@ -256,6 +259,9 @@ jobs:
           echo "\`\`\`"
           cat ./SHA256SUMS
           echo "\`\`\`"
+          echo ""
+          echo "Key package:"
+          echo "${KEYPACKAGE} (version: ${KEYVERSION})"
           echo ""
           echo "Built using input files:"
           echo "\`\`\`"
@@ -360,6 +366,7 @@ jobs:
           echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
+          echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
@@ -389,6 +396,8 @@ jobs:
           VERSION_ID="$(cat ./${SYSEXT}.version_id)"
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
+          KEYPACKAGE="$(cat ./${SYSEXT}.keypackage || echo "N/A")"
+          KEYVERSION="$(cat ./${SYSEXT}.keyversion || echo "N/A")"
 
           if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
@@ -402,6 +411,9 @@ jobs:
           echo "\`\`\`"
           cat ./SHA256SUMS
           echo "\`\`\`"
+          echo ""
+          echo "Key package:"
+          echo "${KEYPACKAGE} (version: ${KEYVERSION})"
           echo ""
           echo "Built using input files:"
           echo "\`\`\`"
@@ -506,6 +518,7 @@ jobs:
           echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
+          echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
@@ -535,6 +548,8 @@ jobs:
           VERSION_ID="$(cat ./${SYSEXT}.version_id)"
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
+          KEYPACKAGE="$(cat ./${SYSEXT}.keypackage || echo "N/A")"
+          KEYVERSION="$(cat ./${SYSEXT}.keyversion || echo "N/A")"
 
           if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
@@ -548,6 +563,9 @@ jobs:
           echo "\`\`\`"
           cat ./SHA256SUMS
           echo "\`\`\`"
+          echo ""
+          echo "Key package:"
+          echo "${KEYPACKAGE} (version: ${KEYVERSION})"
           echo ""
           echo "Built using input files:"
           echo "\`\`\`"
