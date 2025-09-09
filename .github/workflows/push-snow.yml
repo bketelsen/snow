@@ -140,7 +140,6 @@ jobs:
           set -euxo pipefail
           rm -rf mkosi.output/${SYSEXT}.inputs
           rm -rf mkosi.output/${SYSEXT}.version
-          rm -rf mkosi.output/${SYSEXT}.version_id
           rm -rf mkosi.output/${SYSEXT}.arch
           rm -rf mkosi.output/${SYSEXT}.tagname
           rm -rf mkosi.output/${SYSEXT}.SHA256SUMS
@@ -211,7 +210,6 @@ jobs:
             exit 0
           fi
           echo ${VERSION} > ./mkosi.output/${SYSEXT}.version
-          echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
@@ -292,7 +290,6 @@ jobs:
           set -euxo pipefail
           rm -rf mkosi.output/${SYSEXT}.inputs
           rm -rf mkosi.output/${SYSEXT}.version
-          rm -rf mkosi.output/${SYSEXT}.version_id
           rm -rf mkosi.output/${SYSEXT}.arch
           rm -rf mkosi.output/${SYSEXT}.tagname
           rm -rf mkosi.output/${SYSEXT}.SHA256SUMS
@@ -363,7 +360,6 @@ jobs:
             exit 0
           fi
           echo ${VERSION} > ./mkosi.output/${SYSEXT}.version
-          echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
@@ -444,7 +440,6 @@ jobs:
           set -euxo pipefail
           rm -rf mkosi.output/${SYSEXT}.inputs
           rm -rf mkosi.output/${SYSEXT}.version
-          rm -rf mkosi.output/${SYSEXT}.version_id
           rm -rf mkosi.output/${SYSEXT}.arch
           rm -rf mkosi.output/${SYSEXT}.tagname
           rm -rf mkosi.output/${SYSEXT}.SHA256SUMS
@@ -515,7 +510,6 @@ jobs:
             exit 0
           fi
           echo ${VERSION} > ./mkosi.output/${SYSEXT}.version
-          echo ${VERSION_ID} > ./mkosi.output/${SYSEXT}.version_id
           echo ${ARCH} > ./mkosi.output/${SYSEXT}.arch
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
