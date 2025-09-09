@@ -13,7 +13,7 @@
 
           VERSION=$(cat ./mkosi.output/version)
           ARCH=$(cat ./mkosi.output/architecture)
-          TAGNAME="${IMAGE_ID}-${VERSION}"
+          TAGNAME="${IMAGE_ID}_${VERSION}_${ARCH}"
 
           find ./mkosi.images/base -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
           find ./mkosi.extra/ -type f -exec sha256sum {} \; | sort >> ./mkosi.output/inputs
