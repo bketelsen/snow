@@ -240,7 +240,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -270,7 +270,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: confext-podman"
         env:
@@ -381,7 +381,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -411,7 +411,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: confext-qemu-agent"
         env:
@@ -522,7 +522,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -552,7 +552,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-chromium"
         env:
@@ -663,7 +663,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -693,7 +693,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-code"
         env:
@@ -804,7 +804,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -834,7 +834,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-dev"
         env:
@@ -945,7 +945,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -975,7 +975,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-edge"
         env:
@@ -1086,7 +1086,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1116,7 +1116,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-podman"
         env:
@@ -1227,7 +1227,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1257,7 +1257,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-qemu-agent"
         env:
@@ -1368,7 +1368,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1398,7 +1398,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-virt-viewer"
         env:
@@ -1509,7 +1509,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1539,5 +1539,5 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 

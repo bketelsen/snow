@@ -107,7 +107,7 @@
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
+          if [[ ! -f ./${TAGNAME}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -137,4 +137,4 @@
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
