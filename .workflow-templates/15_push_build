@@ -107,7 +107,7 @@
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
+          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
