@@ -4,11 +4,11 @@ Verify=false
 [Source]
 Type=url-file
 Path=https://extensions.snowlinux.org/extensions/%%SYSEXT%%/
-MatchPattern=%%SYSEXT%%-@v-%w-%a.raw
+MatchPattern=%%SYSEXT%%_@v.raw
 
 [Target]
 InstancesMax=2
 Type=regular-file
 Path=/var/lib/extensions.d/
-MatchPattern=%%SYSEXT%%-@v-%w-%a.raw
+MatchPattern=%%SYSEXT%%_@v.raw
 CurrentSymlink=/var/lib/extensions/%%SYSEXT%%.raw

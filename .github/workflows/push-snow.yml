@@ -692,7 +692,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: "sysext-code;sysext-dev;sysext-edge;"
+          SYSEXTS: 'sysext-code;sysext-dev;sysext-edge;'
         shell: bash
         run: |
           set -euxo pipefail
@@ -767,7 +767,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: "sysext-code;sysext-dev;sysext-edge;"
+          SYSEXTS: 'sysext-code;sysext-dev;sysext-edge;'
         shell: bash
         run: |
           set -euxo pipefail
