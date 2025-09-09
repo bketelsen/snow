@@ -98,9 +98,9 @@ jobs:
 
 
           VERSION_ID="$(cat ./version_id)"
-          echo "Searching for ${TAGNAME}.raw for version ID: ${VERSION_ID}"
+          echo "Searching for ${TAGNAME}.raw.zst for version ID: ${VERSION_ID}"
           ls -la .
-          if [[ ! -f ./${TAGNAME}.raw ]]; then
+          if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -130,7 +130,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./inputs
       - name: "Maybe publish sysext: confext-chromium"
         env:
           SYSEXT: confext-chromium
