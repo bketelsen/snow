@@ -104,7 +104,6 @@ jobs:
             echo "No sysext built. Skipping."
             exit 0
           fi
-          cp ./${IMAGE_ID}.SHA256SUMS ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {
@@ -115,7 +114,7 @@ jobs:
           echo ""
           echo "Built using input files:"
           echo "\`\`\`"
-          cat ./${IMAGE_ID}.inputs
+          cat ./inputs
           echo "\`\`\`"
           } > notes
 
