@@ -5,6 +5,11 @@
         shell: bash
         run: |
           set -euxo pipefail
+
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           rm -f ./SHA256SUMS*
           gh release list --limit 2000 --json tagName > releases.json
 

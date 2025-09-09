@@ -38,6 +38,12 @@
           sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
 
           echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"
+
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation for ${TAGNAME}."
+            exit 0
+          fi
+
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"

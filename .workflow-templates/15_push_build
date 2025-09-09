@@ -98,7 +98,10 @@
         shell: bash
         run: |
           set -euxo pipefail
-
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"

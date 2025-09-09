@@ -93,6 +93,12 @@ jobs:
           sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
 
           echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"
+
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation for ${TAGNAME}."
+            exit 0
+          fi
+
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
@@ -146,6 +152,11 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           rm -f ./SHA256SUMS*
           gh release list --limit 2000 --json tagName > releases.json
 
@@ -303,7 +314,10 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
@@ -457,7 +471,10 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
@@ -611,7 +628,10 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
@@ -673,8 +693,11 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          set -euxo pipefail
 
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping named release creation."
+            exit 0
+          fi
           gh release list --limit 2000 --json tagName > releases.json
 
           for sysext in $(echo ${SYSEXTS} | tr ';' ' '); do
