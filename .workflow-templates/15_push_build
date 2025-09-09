@@ -93,6 +93,7 @@
       - name: "Publish sysext if changed"
         env:
           SYSEXT: %%SYSEXT%%
+          PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash

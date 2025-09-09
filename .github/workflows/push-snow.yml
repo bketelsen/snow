@@ -309,6 +309,7 @@ jobs:
       - name: "Publish sysext if changed"
         env:
           SYSEXT: sysext-code
+          PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -466,6 +467,7 @@ jobs:
       - name: "Publish sysext if changed"
         env:
           SYSEXT: sysext-dev
+          PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -623,6 +625,7 @@ jobs:
       - name: "Publish sysext if changed"
         env:
           SYSEXT: sysext-edge
+          PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
