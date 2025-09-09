@@ -97,7 +97,7 @@ jobs:
           cd "mkosi.output"
 
 
-          VERSION_ID="$(cat ./${IMAGE_ID}.version_id)"
+          VERSION_ID="$(cat ./version_id)"
 
           if [[ ! -f "./${TAGNAME}.raw" ]]; then
             echo "No sysext built. Skipping."
