@@ -98,7 +98,8 @@ jobs:
 
 
           VERSION_ID="$(cat ./version_id)"
-
+          echo "Searching for ${TAGNAME}.raw for version ID: ${VERSION_ID}"
+          ls -la .
           if [[ ! -f "./${TAGNAME}.raw" ]]; then
             echo "No sysext built. Skipping."
             exit 0
