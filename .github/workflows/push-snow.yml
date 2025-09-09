@@ -135,6 +135,7 @@ jobs:
             ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
             ./${TAGNAME}.usr-x86-64.*.raw.zst \
+            ./${TAGNAME}_${ARCH}.manifest \
             ./SHA256SUMS \
             ./inputs
       - name: "Maybe publish sysext: sysext-code"
