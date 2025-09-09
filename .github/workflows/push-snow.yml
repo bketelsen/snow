@@ -182,7 +182,11 @@ jobs:
           # fi
           KEYPACKAGE=$(cat ./mkosi.output/${SYSEXT}.keypackage || echo "NIL")
           echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
-          KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
           VERSION=$(cat ./mkosi.output/${SYSEXT}*.version_id)
           echo "VERSION for ${SYSEXT} is: ${VERSION}"
           if [[ "$(uname -m)" == "x86_64" ]]; then
@@ -332,7 +336,11 @@ jobs:
           # fi
           KEYPACKAGE=$(cat ./mkosi.output/${SYSEXT}.keypackage || echo "NIL")
           echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
-          KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
           VERSION=$(cat ./mkosi.output/${SYSEXT}*.version_id)
           echo "VERSION for ${SYSEXT} is: ${VERSION}"
           if [[ "$(uname -m)" == "x86_64" ]]; then
@@ -482,7 +490,11 @@ jobs:
           # fi
           KEYPACKAGE=$(cat ./mkosi.output/${SYSEXT}.keypackage || echo "NIL")
           echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
-          KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat ./mkosi.output/${SYSEXT}_*.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
           VERSION=$(cat ./mkosi.output/${SYSEXT}*.version_id)
           echo "VERSION for ${SYSEXT} is: ${VERSION}"
           if [[ "$(uname -m)" == "x86_64" ]]; then
