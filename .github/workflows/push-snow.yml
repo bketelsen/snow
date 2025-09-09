@@ -135,7 +135,7 @@ jobs:
             ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
             ./${TAGNAME}.usr-x86-64.*.raw.zst \
-            ./${TAGNAME}_${ARCH}.manifest \
+            ./${TAGNAME}.manifest \
             ./SHA256SUMS \
             ./inputs
       - name: "named release for SNOW Linux"
