@@ -56,6 +56,7 @@ main() {
         done
     uniq_sysexts="$(echo "${all_sysexts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ';')"
     sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/16_push_named_sysexts"
+    sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/20_gather_releases"
     } > ".github/workflows/push-snow.yml"
 }
 
