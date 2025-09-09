@@ -217,7 +217,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: confext-chromium
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -357,7 +357,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: confext-podman
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -497,7 +497,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: confext-qemu-agent
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -637,7 +637,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-chromium
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -777,7 +777,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-code
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -917,7 +917,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-dev
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -1057,7 +1057,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-edge
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -1197,7 +1197,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-podman
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -1337,7 +1337,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-qemu-agent
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
@@ -1477,7 +1477,7 @@ jobs:
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
-          SYSEXT: ${{ inputs.sysext }}
+          SYSEXT: sysext-virt-viewer
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
         shell: bash
