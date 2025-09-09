@@ -53,15 +53,57 @@ jobs:
           ARCH=$(cat ./mkosi.output/arch)
           VERSION_ID=$(cat ./mkosi.output/version_id)
           cp ./mkosi.output/base.manifest ./mkosi.output/SNOW_${VERSION_ID}_${ARCH}.manifest
-
-      - name: list artifacts
+      - name: "push main image"
+        env:
+          PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+        shell: bash
         run: |
-          ls -la mkosi.output
-      - name: Upload Artifact - Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: SNOW.raw.zst
-          path: mkosi.output/SNOW_*.raw.zst
+          set -euxo pipefail
+
+
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build
+                  exit 0
+              fi
+          fi
+
+          IMAGE_ID=$(cat ./mkosi.output/image_id)
+
+
+          VERSION=$(cat ./mkosi.output/version)
+          ARCH=$(cat ./mkosi.output/architecture)
+          TAGNAME="${IMAGE_ID}-${VERSION}"
+
+          find ./mkosi.images/base -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+          find ./mkosi.extra/ -type f -exec sha256sum {} \; | sort >> ./mkosi.output/inputs
+          sha256sum mkosi.conf >> ./mkosi.output/inputs
+          sha256sum mkosi.finalize >> ./mkosi.output/inputs
+          new="$(cat ./mkosi.output/inputs)"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"
       - name: "Build sysext: confext-chromium"
         env:
           SYSEXT: confext-chromium
@@ -1402,22 +1444,3 @@ jobs:
             --latest=false \
             ./*.raw ./SHA256SUMS ./inputs
 
-  publish-sysexts:
-    runs-on: "ubuntu-24.04"
-
-
-    # Use `always()` to still run if any dependent job fails
-    if: ${{ always() && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' }}
-    steps:
-      - name: "Checkout repo"
-        uses: actions/checkout@v4
-
-      - name: "Mark directory as safe"
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git fetch --no-tags --prune --depth=1 origin +refs/heads/main:refs/remotes/origin/main
-
-      - name: "Gather all sysexts releases"
-        uses: ./.github/actions/gather
-        with:
-          sysexts: 'confext-chromium;confext-podman;confext-qemu-agent;sysext-chromium;sysext-code;sysext-dev;sysext-edge;sysext-podman;sysext-qemu-agent;sysext-virt-viewer;'

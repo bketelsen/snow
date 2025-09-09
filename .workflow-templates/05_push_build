@@ -1,0 +1,51 @@
+      - name: "push main image"
+        env:
+          PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build
+                  exit 0
+              fi
+          fi
+
+          IMAGE_ID=$(cat ./mkosi.output/image_id)
+
+
+          VERSION=$(cat ./mkosi.output/version)
+          ARCH=$(cat ./mkosi.output/architecture)
+          TAGNAME="${IMAGE_ID}-${VERSION}"
+
+          find ./mkosi.images/base -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
+          find ./mkosi.extra/ -type f -exec sha256sum {} \; | sort >> ./mkosi.output/inputs
+          sha256sum mkosi.conf >> ./mkosi.output/inputs
+          sha256sum mkosi.finalize >> ./mkosi.output/inputs
+          new="$(cat ./mkosi.output/inputs)"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
+          old="$(cat inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo ${VERSION} > ./mkosi.output/version
+          echo ${VERSION_ID} > ./mkosi.output/version_id
+          echo ${ARCH} > ./mkosi.output/arch
+          echo ${TAGNAME} > ./mkosi.output/tagname
+          cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
+          # remove the "*" character from the SHA256SUMS file
+          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
+          echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"

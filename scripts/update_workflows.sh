@@ -34,6 +34,7 @@ main() {
     sed -e "s|%%RELEASEURL%%|${releaseurl}|g" \
         "${tmpl}/00_push_header"
 
+    cat "${tmpl}/05_push_build"
 
 
     readarray -t sysexts < <(./scripts/extensions.sh | sort)
@@ -48,12 +49,12 @@ main() {
 
 
     # TODO: Dynamic list of jobs to depend on
-    all_sysexts=()
-        for s in "${sysexts[@]}"; do
-                all_sysexts+=("${s}")
-        done
-    uniq_sysexts="$(echo "${all_sysexts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ';')"
-    sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/20_sysexts_gather"
+    # all_sysexts=()
+    #     for s in "${sysexts[@]}"; do
+    #             all_sysexts+=("${s}")
+    #     done
+    # uniq_sysexts="$(echo "${all_sysexts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ';')"
+    # sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/20_sysexts_gather"
     } > ".github/workflows/push-snow.yml"
 }
 
