@@ -193,7 +193,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -334,7 +334,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -475,7 +475,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -616,7 +616,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -757,7 +757,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -898,7 +898,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -1039,7 +1039,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -1180,7 +1180,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -1321,7 +1321,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
@@ -1462,7 +1462,7 @@ jobs:
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}-${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}"
 
           echo "Fetching info from existing release: ${TAGNAME}"
           curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
