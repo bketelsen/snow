@@ -94,6 +94,7 @@
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -106,7 +107,7 @@
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -136,4 +137,4 @@
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs

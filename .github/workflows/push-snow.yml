@@ -227,6 +227,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -239,7 +240,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -269,7 +270,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: confext-podman"
         env:
@@ -367,6 +368,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -379,7 +381,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -409,7 +411,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: confext-qemu-agent"
         env:
@@ -507,6 +509,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -519,7 +522,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -549,7 +552,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-chromium"
         env:
@@ -647,6 +650,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -659,7 +663,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -689,7 +693,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-code"
         env:
@@ -787,6 +791,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -799,7 +804,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -829,7 +834,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-dev"
         env:
@@ -927,6 +932,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -939,7 +945,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -969,7 +975,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-edge"
         env:
@@ -1067,6 +1073,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -1079,7 +1086,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1109,7 +1116,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-podman"
         env:
@@ -1207,6 +1214,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -1219,7 +1227,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1249,7 +1257,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-qemu-agent"
         env:
@@ -1347,6 +1355,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -1359,7 +1368,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1389,7 +1398,7 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
       - name: "Maybe publish sysext: sysext-virt-viewer"
         env:
@@ -1487,6 +1496,7 @@ jobs:
           git config --global --add safe.directory "${PWD}"
 
           cd "mkosi.output"
+          ls -la
 
           release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
           if [[ "${release_needed}" != "1" ]]; then
@@ -1499,7 +1509,7 @@ jobs:
           ARCH="$(cat ./${SYSEXT}.arch)"
           TAGNAME="$(cat ./${SYSEXT}.tagname)"
 
-          if [[ ! -f "./${TAGNAME}.raw" ]]; then
+          if [[ ! -f "./${TAGNAME}.raw.zst" ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
@@ -1529,5 +1539,5 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
