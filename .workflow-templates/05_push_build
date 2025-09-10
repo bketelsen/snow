@@ -38,8 +38,7 @@
           sed -i '/\.raw$/!d' ./mkosi.output/SHA256SUMS
           cat ./mkosi.output/SHA256SUMS
 
-          # remove the "*" character from the SHA256SUMS file
-          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
           cat ./mkosi.output/SHA256SUMS
 
 

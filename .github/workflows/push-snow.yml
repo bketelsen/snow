@@ -91,8 +91,7 @@ jobs:
           sed -i '/\.raw$/!d' ./mkosi.output/SHA256SUMS
           cat ./mkosi.output/SHA256SUMS
 
-          # remove the "*" character from the SHA256SUMS file
-          sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
+
           cat ./mkosi.output/SHA256SUMS
 
 
@@ -307,8 +306,6 @@ jobs:
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
-          # remove the "*" character from the SHA256SUMS file
-          sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
@@ -467,8 +464,6 @@ jobs:
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
-          # remove the "*" character from the SHA256SUMS file
-          sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
@@ -627,8 +622,6 @@ jobs:
           echo ${TAGNAME} > ./mkosi.output/${SYSEXT}.tagname
           echo ${KEYVERSION} > ./mkosi.output/${SYSEXT}.keyversion
           cat ./mkosi.output/${SYSEXT}_*.SHA256SUMS > ./mkosi.output/${SYSEXT}.SHA256SUMS
-          # remove the "*" character from the SHA256SUMS file
-          sed -i 's/\*//g' ./mkosi.output/${SYSEXT}.SHA256SUMS
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
