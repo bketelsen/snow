@@ -46,8 +46,6 @@ jobs:
         run: |
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
-          sha256sum ./mkosi.crt
-          sha256sum ./mkosi.key
           chmod 600 ./mkosi.key
           mkosi build --compress-output=yes
           ARCH=$(cat ./mkosi.output/arch)

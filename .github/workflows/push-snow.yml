@@ -46,8 +46,6 @@ jobs:
         run: |
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
-          sha256sum ./mkosi.crt
-          sha256sum ./mkosi.key
           chmod 600 ./mkosi.key
           mkosi build --compress-output=yes
           ARCH=$(cat ./mkosi.output/arch)
@@ -61,11 +59,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-
-
           IMAGE_ID=$(cat ./mkosi.output/image_id)
-
-
           VERSION=$(cat ./mkosi.output/version)
           ARCH=$(cat ./mkosi.output/architecture)
           TAGNAME="${IMAGE_ID}_${VERSION}_${ARCH}"
@@ -89,6 +83,8 @@ jobs:
           fi
 
           cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
+          # remove all lines from SHA256SUMS that do not end in ".raw"
+          sed -i '/\.raw$/!d' ./mkosi.output/SHA256SUMS
           # remove the "*" character from the SHA256SUMS file
           sed -i 's/\*//g' ./mkosi.output/SHA256SUMS
 
@@ -342,6 +338,8 @@ jobs:
             exit 0
           fi
           cp ./${SYSEXT}.SHA256SUMS ./SHA256SUMS
+          # remove all lines from SHA256SUMS that do not end in ".raw"
+          sed -i '/\.raw$/!d' ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {
@@ -500,6 +498,8 @@ jobs:
             exit 0
           fi
           cp ./${SYSEXT}.SHA256SUMS ./SHA256SUMS
+          # remove all lines from SHA256SUMS that do not end in ".raw"
+          sed -i '/\.raw$/!d' ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {
@@ -658,6 +658,8 @@ jobs:
             exit 0
           fi
           cp ./${SYSEXT}.SHA256SUMS ./SHA256SUMS
+          # remove all lines from SHA256SUMS that do not end in ".raw"
+          sed -i '/\.raw$/!d' ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {

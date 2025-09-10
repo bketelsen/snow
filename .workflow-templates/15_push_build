@@ -126,6 +126,8 @@
             exit 0
           fi
           cp ./${SYSEXT}.SHA256SUMS ./SHA256SUMS
+          # remove all lines from SHA256SUMS that do not end in ".raw"
+          sed -i '/\.raw$/!d' ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {
