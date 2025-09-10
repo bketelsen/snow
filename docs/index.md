@@ -2,15 +2,12 @@
 nav_order: 1
 ---
 
-# systemd system extensions for Fedora image based systems
+# systemd system extensions for SNOW Linux
 
 **NOTE: This is currently an experimental project. Make sure to read the known
 limitations section. Use at your own risk.**
 
-This project makes sysexts available for Fedora CoreOS, Fedora Atomic Desktops,
-Fedora IoT, and other Fedora Bootable Container (bootc) systems (and classic
-ostree/rpm-ostree systems). Those sysexts should also work for Universal Blue
-images such as Bazzite, Bluefin, Aurora, uCore.
+This project makes sysexts available for SNOW Linux.
 
 ## What are sysexts?
 
