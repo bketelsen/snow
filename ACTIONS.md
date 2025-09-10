@@ -1,5 +1,7 @@
 # Workflow Documentation
 
+## Rough Process Flow
+
 - build image
 
   - create metadata
@@ -23,3 +25,10 @@
 - update global metadata
   - get all image + extension metadata
   - create global metadata release tag: SHA256SUMS
+
+## Updating Actions
+
+- Modify .workflow-templates/ as needed
+- Modify ./scripts/update_workflows.sh to add/remove workflow steps from templates
+- Run ./scripts/update_workflows.sh
+- add .github/workflows/\* to your commit and push
