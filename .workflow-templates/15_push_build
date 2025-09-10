@@ -10,7 +10,6 @@
           rm -rf mkosi.output/${SYSEXT}.version
           rm -rf mkosi.output/${SYSEXT}.arch
           rm -rf mkosi.output/${SYSEXT}.tagname
-          rm -rf mkosi.output/${SYSEXT}.SHA256SUMS
           rm -rf mkosi.output/SHA256SUMS
           # For PRs, only build if the content changed
           if [[ "${PR}" == "true" ]]; then
