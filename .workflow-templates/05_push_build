@@ -34,7 +34,6 @@
 
 
           # remove all lines from SHA256SUMS that do not end in ".raw"
-          sed -i '/\.raw$/!d' ./mkosi.output/SHA256SUMS
           cat ./mkosi.output/SHA256SUMS
 
 
