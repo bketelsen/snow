@@ -7,16 +7,3 @@ set -e
 mkdir -p "$BUILDROOT/usr/share/factory/"
 cp --archive --no-target-directory --update=none "$BUILDROOT/etc" "$BUILDROOT/usr/share/factory/etc"
 
-echo $IMAGE_VERSION > "$OUTPUTDIR/version"
-echo $ARCHITECTURE > "$OUTPUTDIR/arch"
-echo $IMAGE_ID > "$OUTPUTDIR/image_id"
-
-if [[ "$(uname -m)" == "x86_64" ]]; then
-    ARCH="x86-64"
-elif [[ "$(uname -m)" == "aarch64" ]]; then
-    ARCH="arm64"
-else
-    echo "Unsupported architecture"
-    exit 1
-fi
-echo $ARCH > "$OUTPUTDIR/architecture"

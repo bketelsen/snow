@@ -1,0 +1,10 @@
+#!/bin/bash
+# SPDX-License-Identifier: LGPL-2.1-or-later
+set -e
+KEYPACKAGE=microsoft-edge-stable
+KEYVERSION=$(cat $OUTPUTDIR/${IMAGE_ID}.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+
+
+
+cat "$OUTPUTDIR/$IMAGE_ID.manifest" | jq --arg KEYPACKAGE ${KEYPACKAGE} --arg KEYVERSION ${KEYVERSION} -c '.config.key_package=$KEYPACKAGE | .config.key_version=$KEYVERSION' > "$OUTPUTDIR/$IMAGE_ID.manifest.tmp"
+mv "$OUTPUTDIR/$IMAGE_ID.manifest.tmp" "$OUTPUTDIR/$IMAGE_ID.manifest"

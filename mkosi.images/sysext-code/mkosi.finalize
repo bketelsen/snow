@@ -1,8 +1,0 @@
-#!/bin/bash
-# SPDX-License-Identifier: LGPL-2.1-or-later
-set -e
-
-
-
-echo $IMAGE_VERSION > "$OUTPUTDIR/$IMAGE_ID.version_id"
-echo "code" > "$OUTPUTDIR/$IMAGE_ID.keypackage"

@@ -5,39 +5,27 @@
         shell: bash
         run: |
           set -euxo pipefail
+          OUTPUTDIR="./mkosi.output"
 
-          IMAGE_ID=$(cat ./mkosi.output/image_id)
-          VERSION=$(cat ./mkosi.output/version)
-          ARCH=$(cat ./mkosi.output/architecture)
+          # find the first file in the output directory that matches the pattern "SNOW_*.manifest"
+          MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "SNOW_*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          ARCH=$(jq -r '.config.architecture' "$MANIFEST_FILE")
+          VERSION=$(jq -r '.config.version' "$MANIFEST_FILE")
+          IMAGE_ID=$(jq -r '.config.name' "$MANIFEST_FILE")
+          RELEASE=$(jq -r '.config.release' "$MANIFEST_FILE")
+          BASENAME="${IMAGE_ID}_${VERSION}_${ARCH}"
           TAGNAME="${IMAGE_ID}_${VERSION}_${ARCH}"
-          cp ./mkosi.output/SNOW.manifest ./mkosi.output/${TAGNAME}.manifest
 
           find ./mkosi.images/base -type f -exec sha256sum {} \; | sort > ./mkosi.output/inputs
           find ./mkosi.extra/ -type f -exec sha256sum {} \; | sort >> ./mkosi.output/inputs
           sha256sum mkosi.conf >> ./mkosi.output/inputs
           sha256sum mkosi.finalize >> ./mkosi.output/inputs
-          new="$(cat ./mkosi.output/inputs)"
 
-          echo "Fetching info from existing release: ${TAGNAME}"
-          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/inputs"  || touch inputs.old
-          old="$(cat inputs.old)"
+          cp ./mkosi.output/${BASENAME}.SHA256SUMS > ./mkosi.output/SHA256SUMS
 
-          # only proceed if the inputs changed
-
-          if [[ "${new}" == "${old}" ]]; then
-            echo "No changes in inputs since last release. Skipping."
-            exit 0
-          fi
-
-          cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
-
-
-
-          # remove all lines from SHA256SUMS that do not end in ".raw"
-          cat ./mkosi.output/SHA256SUMS
-
-
-          echo "Detected changes. Proceeding to publish new release for: ${TAGNAME}"
+          echo "Proceeding to publish new release for: ${TAGNAME}"
 
           if [[ "${PR}" == "true" ]]; then
             echo "Pull request detected. Skipping release creation for ${TAGNAME}."
@@ -48,12 +36,10 @@
 
           cd "mkosi.output"
 
-
-          VERSION_ID="$(cat ./version_id)"
-          echo "Searching for ${TAGNAME}.raw.zst for version ID: ${VERSION_ID}"
+          echo "Searching for ${TAGNAME}.raw.zst"
           ls -la .
           if [[ ! -f ./${TAGNAME}.raw.zst ]]; then
-            echo "No sysext built. Skipping."
+            echo "No image built. Skipping."
             exit 0
           fi
           cat ./SHA256SUMS
@@ -78,7 +64,7 @@
             || true
 
           gh release create \
-            --title "${IMAGE_ID} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --title "${IMAGE_ID} ${VERSION} for Debian ${RELEASE} (${ARCH})" \
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \

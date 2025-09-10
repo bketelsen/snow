@@ -48,6 +48,3 @@ jobs:
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
           mkosi build --compress-output=yes
-          ARCH=$(cat ./mkosi.output/arch)
-          VERSION_ID=$(cat ./mkosi.output/version_id)
-          cp ./mkosi.output/base.manifest ./mkosi.output/SNOW.manifest
