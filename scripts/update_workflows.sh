@@ -49,14 +49,14 @@ main() {
     done
 
 
-    # # TODO: Dynamic list of jobs to depend on
-    # all_sysexts=()
-    #     for s in "${sysexts[@]}"; do
-    #             all_sysexts+=("${s}")
-    #     done
-    # uniq_sysexts="$(echo "${all_sysexts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ';')"
-    # sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/16_push_named_sysexts"
-    # sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/20_gather_releases"
+    # TODO: Dynamic list of jobs to depend on
+    all_sysexts=()
+        for s in "${sysexts[@]}"; do
+                all_sysexts+=("${s}")
+        done
+    uniq_sysexts="$(echo "${all_sysexts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ';')"
+    sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/16_push_named_sysexts"
+    sed -e "s|%%SYSEXTS%%|${uniq_sysexts}|g" "${tmpl}/20_gather_releases"
     } > ".github/workflows/push-snow.yml"
 }
 
