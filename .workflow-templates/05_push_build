@@ -54,6 +54,7 @@
             echo "No sysext built. Skipping."
             exit 0
           fi
+          cat ./SHA256SUMS
           echo "Creating new release for: ${TAGNAME}"
 
           {
