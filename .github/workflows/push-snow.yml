@@ -82,7 +82,7 @@ jobs:
             exit 0
           fi
 
-          cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS
+          cat ./mkosi.output/${IMAGE_ID}_*.SHA256SUMS > ./mkosi.output/SHA256SUMS
 
 
 
