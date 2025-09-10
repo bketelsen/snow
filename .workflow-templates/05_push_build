@@ -23,7 +23,7 @@
           sha256sum mkosi.conf >> ./mkosi.output/inputs
           sha256sum mkosi.finalize >> ./mkosi.output/inputs
 
-          cp ./mkosi.output/${BASENAME}.SHA256SUMS > ./mkosi.output/SHA256SUMS
+          cp ./mkosi.output/${BASENAME}.SHA256SUMS ./mkosi.output/SHA256SUMS
 
           echo "Proceeding to publish new release for: ${TAGNAME}"
 
