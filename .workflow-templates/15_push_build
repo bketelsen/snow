@@ -69,11 +69,10 @@
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          # This is BASE now
-          #TAGNAME="${SYSEXT}_${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
 
-          echo "Fetching info from existing release: ${BASE}"
-          curl --location --fail --output inputs.old  "${RELEASEURL}/${BASE}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
           old="$(cat ${SYSEXT}.inputs.old)"
 
           # only proceed if the inputs changed
@@ -83,7 +82,7 @@
             exit 0
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
-          echo "Detected changes. Proceeding to publish new sysext for: ${BASE}"
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
       - name: "Publish sysext if changed"
         env:
           SYSEXT: %%SYSEXT%%
@@ -129,7 +128,7 @@
           ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
 
           # This is BASE now
-          #TAGNAME="${SYSEXT}_${VERSION}"
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
 
           if [[ ! -f ./${BASE}.raw ]]; then
             echo "No sysext built. Skipping."
@@ -139,6 +138,8 @@
 
 
           # rename the sysext to match the expected naming convention for releases
+          mv ./${BASE}.raw ./${TAGNAME}.raw
+          echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
 
           echo "Creating new release for: ${BASE}"
 
@@ -163,12 +164,12 @@
           gh release delete \
             --cleanup-tag \
             --yes \
-            "${BASE}" \
+            "${TAGNAME}" \
             || true
 
           gh release create \
             --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
             --notes-file notes \
-            "${BASE}" \
+            "${TAGNAME}" \
             --latest=false \
-            ./${BASE}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
