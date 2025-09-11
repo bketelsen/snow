@@ -6,6 +6,7 @@
         shell: bash
         run: |
           set -euxo pipefail
+
           rm -rf mkosi.output/${SYSEXT}.inputs
           rm -rf mkosi.output/${SYSEXT}.version
           rm -rf mkosi.output/${SYSEXT}.arch
@@ -37,21 +38,30 @@
               fi
           fi
 
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+
+
           # Only release if the inputs changed
           # VERSION_ID is the Debian version ID for the sysext, in numerical format (e.g., "12" for Debian 12)
           # SYSCON is the output format of the sysext, either "confext" or "sysext"
-          VERSION_ID=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r '.extension.VERSION_ID')
-          SYSCON=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r '.config.output_format')
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
           # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
-          KEYPACKAGE=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r '.config.key_package')
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
           echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
           if [[ "${KEYPACKAGE}" == "NIL" ]]; then
               KEYVERSION="NIL"
           else
-              KEYVERSION=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
           fi
-          VERSION=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r '.config.version')
-          ARCH=$(cat ./mkosi.output/${SYSEXT}.manifest | jq -r '.config.architecture')
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
 
           echo "VERSION for ${SYSEXT} is: ${VERSION}"
 
@@ -59,10 +69,11 @@
 
           new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
 
-          TAGNAME="${SYSEXT}_${VERSION}"
+          # This is BASE now
+          #TAGNAME="${SYSEXT}_${VERSION}"
 
-          echo "Fetching info from existing release: ${TAGNAME}"
-          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
+          echo "Fetching info from existing release: ${BASE}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${BASE}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
           old="$(cat ${SYSEXT}.inputs.old)"
 
           # only proceed if the inputs changed
@@ -72,7 +83,7 @@
             exit 0
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
-          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+          echo "Detected changes. Proceeding to publish new sysext for: ${BASE}"
       - name: "Publish sysext if changed"
         env:
           SYSEXT: %%SYSEXT%%
@@ -96,31 +107,40 @@
             echo "No release needed for ${SYSEXT}. Skipping."
             exit 0
           fi
-          VERSION_ID=$(cat ./${SYSEXT}.manifest | jq -r '.extension.VERSION_ID')
-          SYSCON=$(cat ./${SYSEXT}.manifest | jq -r '.config.output_format')
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
           # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
-          KEYPACKAGE=$(cat ./${SYSEXT}.manifest | jq -r '.config.key_package')
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
           echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
           if [[ "${KEYPACKAGE}" == "NIL" ]]; then
               KEYVERSION="NIL"
           else
-              KEYVERSION=$(cat ./${SYSEXT}.manifest | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
           fi
-          VERSION=$(cat ./${SYSEXT}.manifest | jq -r '.config.version')
-          ARCH=$(cat ./${SYSEXT}.manifest | jq -r '.config.architecture')
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
 
-          TAGNAME="${SYSEXT}_${VERSION}"
+          # This is BASE now
+          #TAGNAME="${SYSEXT}_${VERSION}"
 
-          if [[ ! -f ./${SYSEXT}.raw ]]; then
+          if [[ ! -f ./${BASE}.raw ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
-          cp ./${SYSEXT}.SHA256SUMS ./SHA256SUMS
+          cp ./${BASE}.SHA256SUMS ./SHA256SUMS
 
 
           # rename the sysext to match the expected naming convention for releases
-          mv ./${SYSEXT}.raw ./${TAGNAME}.raw
-          echo "Creating new release for: ${TAGNAME}"
+
+          echo "Creating new release for: ${BASE}"
 
           {
           echo "Release:"
@@ -143,12 +163,12 @@
           gh release delete \
             --cleanup-tag \
             --yes \
-            "${TAGNAME}" \
+            "${BASE}" \
             || true
 
           gh release create \
             --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
             --notes-file notes \
-            "${TAGNAME}" \
+            "${BASE}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${BASE}.raw ./SHA256SUMS ./${SYSEXT}.inputs
