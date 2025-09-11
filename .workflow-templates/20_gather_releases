@@ -7,6 +7,9 @@
         run: |
           set -euxo pipefail
 
+          echo "Sleeping to wait for previous releases to be ready..."
+          sleep 180 # wait for previous releases to be ready
+
           rm -f ./SHA256SUMS* ./*.conf
 
           # Gather Sysext named releases and their SHA256SUMS files

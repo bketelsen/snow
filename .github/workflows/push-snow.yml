@@ -739,6 +739,8 @@ jobs:
         run: |
           set -euxo pipefail
 
+          echo "Sleeping to wait for previous releases to be ready..."
+          sleep 180 # wait for previous releases to be ready
           if [[ "${PR}" == "true" ]]; then
             echo "Pull request detected. Skipping named release creation."
             exit 0
@@ -813,6 +815,9 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+
+          echo "Sleeping to wait for previous releases to be ready..."
+          sleep 180 # wait for previous releases to be ready
 
           rm -f ./SHA256SUMS* ./*.conf
 
