@@ -337,7 +337,7 @@ jobs:
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
-          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
 
 
 
@@ -515,7 +515,7 @@ jobs:
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
-          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
 
 
 
@@ -693,7 +693,7 @@ jobs:
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
-          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
 
 
 
