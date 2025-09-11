@@ -134,7 +134,7 @@
             echo "No sysext built. Skipping."
             exit 0
           fi
-          cp ./${BASE}.SHA256SUMS ./SHA256SUMS
+          sha256sum ./${sysext}.raw > ./SHA256SUMS
 
 
           # rename the sysext to match the expected naming convention for releases
