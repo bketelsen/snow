@@ -69,6 +69,12 @@ main() {
           exit 1
       fi
 
+      if [[ $# -lt 1 ]]; then
+          echo "Error: Missing arguments" >&2
+          usage
+          exit 1
+      fi
+
     local verb="$1"
 
     # Validate verb and call appropriate function
