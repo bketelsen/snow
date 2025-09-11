@@ -332,12 +332,14 @@ jobs:
             echo "No sysext built. Skipping."
             exit 0
           fi
-          sha256sum ./${sysext}.raw > ./SHA256SUMS
 
 
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
+          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+
+
 
           echo "Creating new release for: ${BASE}"
 
@@ -508,12 +510,14 @@ jobs:
             echo "No sysext built. Skipping."
             exit 0
           fi
-          sha256sum ./${sysext}.raw > ./SHA256SUMS
 
 
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
+          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+
+
 
           echo "Creating new release for: ${BASE}"
 
@@ -684,12 +688,14 @@ jobs:
             echo "No sysext built. Skipping."
             exit 0
           fi
-          sha256sum ./${sysext}.raw > ./SHA256SUMS
 
 
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw ./${TAGNAME}.raw
           echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
+          sha256sum ./${TAGNAME}.raw > ./SHA256SUMS
+
+
 
           echo "Creating new release for: ${BASE}"
 
