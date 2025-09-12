@@ -196,6 +196,184 @@ jobs:
               --latest=false \
               ./SHA256SUMS
           fi
+      - name: "Maybe publish sysext: sysext-code"
+        env:
+          SYSEXT: sysext-code
+          PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          rm -rf mkosi.output/${SYSEXT}.inputs
+          rm -rf mkosi.output/${SYSEXT}.version
+          rm -rf mkosi.output/${SYSEXT}.arch
+          rm -rf mkosi.output/${SYSEXT}.tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+
+
+          # Only release if the inputs changed
+          # VERSION_ID is the Debian version ID for the sysext, in numerical format (e.g., "12" for Debian 12)
+          # SYSCON is the output format of the sysext, either "confext" or "sysext"
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
+          # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
+          echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
+
+          echo "VERSION for ${SYSEXT} is: ${VERSION}"
+
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/${SYSEXT}.inputs
+
+          new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
+
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
+          old="$(cat ${SYSEXT}.inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo 1 > ./mkosi.output/${SYSEXT}.release_needed
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: sysext-code
+          PR: ${{ github.event_name == 'pull_request' }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+          ls -la
+
+          release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
+          if [[ "${release_needed}" != "1" ]]; then
+            echo "No release needed for ${SYSEXT}. Skipping."
+            exit 0
+          fi
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
+          # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
+          echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
+
+          # This is BASE now
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
+
+          if [[ ! -f ./${BASE}.raw ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+
+          # rename the sysext to match the expected naming convention for releases
+          mv ./${BASE}.raw ./${TAGNAME}.raw
+          echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
+          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
+
+
+
+          echo "Creating new release for: ${BASE}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          if [[ "${KEYPACKAGE}" != "NIL" ]]; then
+              echo "Key package: ${KEYPACKAGE} (version: ${KEYVERSION})"
+          else
+              echo "No key package for this sysext."
+          fi
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./${SYSEXT}.inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+
       - name: "Maybe publish sysext: sysext-dev"
         env:
           SYSEXT: sysext-dev
@@ -374,11 +552,189 @@ jobs:
             --latest=false \
             ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
+      - name: "Maybe publish sysext: sysext-edge"
+        env:
+          SYSEXT: sysext-edge
+          PR: ${{ github.event_name == 'pull_request' }}
+          FORCE_REBUILD: ${{ inputs.force-rebuild }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          rm -rf mkosi.output/${SYSEXT}.inputs
+          rm -rf mkosi.output/${SYSEXT}.version
+          rm -rf mkosi.output/${SYSEXT}.arch
+          rm -rf mkosi.output/${SYSEXT}.tagname
+          rm -rf mkosi.output/SHA256SUMS
+          # For PRs, only build if the content changed
+          if [[ "${PR}" == "true" ]]; then
+              pushd "mkosi.images/${SYSEXT}"
+
+              diff="$(
+                git diff origin/main HEAD --stat -- . ; \
+              )"
+              if [[ -z "${diff}" ]]; then
+                  echo "Skipping: No changes for this sysext in this PR"
+                  exit 0
+              fi
+              popd
+              echo "Detected changes for this sysext in this PR. Building."
+                mkosi build --profile=sysext-only --dependency=${SYSEXT}
+              exit 0
+          fi
+
+          # Check if we are asked to force a rebuild
+          if [ -n ${FORCE_REBUILD+x} ]; then
+              if [[ "${FORCE_REBUILD}" == true ]]; then
+                  echo "Building (forced rebuild)"
+                    mkosi build --profile=sysext-only --dependency=${SYSEXT}
+                  exit 0
+              fi
+          fi
+
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+
+
+          # Only release if the inputs changed
+          # VERSION_ID is the Debian version ID for the sysext, in numerical format (e.g., "12" for Debian 12)
+          # SYSCON is the output format of the sysext, either "confext" or "sysext"
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
+          # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
+          echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
+
+          echo "VERSION for ${SYSEXT} is: ${VERSION}"
+
+          find ./mkosi.images/${SYSEXT} -type f -exec sha256sum {} \; | sort > ./mkosi.output/${SYSEXT}.inputs
+
+          new="$(cat ./mkosi.output/${SYSEXT}.inputs)"
+
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
+
+          echo "Fetching info from existing release: ${TAGNAME}"
+          curl --location --fail --output inputs.old  "${RELEASEURL}/${TAGNAME}/${SYSEXT}.inputs"  || touch ${SYSEXT}.inputs.old
+          old="$(cat ${SYSEXT}.inputs.old)"
+
+          # only proceed if the inputs changed
+
+          if [[ "${new}" == "${old}" ]]; then
+            echo "No changes in inputs since last release. Skipping."
+            exit 0
+          fi
+          echo 1 > ./mkosi.output/${SYSEXT}.release_needed
+          echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
+      - name: "Publish sysext if changed"
+        env:
+          SYSEXT: sysext-edge
+          PR: ${{ github.event_name == 'pull_request' }}
+          GH_TOKEN: ${{ github.token }}
+        if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
+          git config --global --add safe.directory "${PWD}"
+
+          cd "mkosi.output"
+          ls -la
+
+          release_needed=$(cat ./${SYSEXT}.release_needed || echo "0")
+          if [[ "${release_needed}" != "1" ]]; then
+            echo "No release needed for ${SYSEXT}. Skipping."
+            exit 0
+          fi
+          # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          echo "Found manifest file: $MANIFEST_FILE"
+
+          # get the filename without the directory and without the extension
+          # this should be "sysext-XXX_<version>_<arch>"
+          BASE=$(basename "$MANIFEST_FILE" .manifest)
+          VERSION_ID=$(cat $MANIFEST_FILE | jq -r '.extension.VERSION_ID')
+
+          SYSCON=$(cat $MANIFEST_FILE | jq -r '.config.output_format')
+          # KEYPACKAGE is the name of the key package for this sysext, if any, otherwise "NIL"
+          KEYPACKAGE=$(cat $MANIFEST_FILE | jq -r '.config.key_package')
+          echo "KEYPACKAGE for ${SYSEXT} is: ${KEYPACKAGE}"
+          if [[ "${KEYPACKAGE}" == "NIL" ]]; then
+              KEYVERSION="NIL"
+          else
+              KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
+          fi
+          VERSION=$(cat $MANIFEST_FILE | jq -r '.config.version')
+          ARCH=$(cat $MANIFEST_FILE | jq -r '.config.architecture')
+
+          # This is BASE now
+          TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
+
+          if [[ ! -f ./${BASE}.raw ]]; then
+            echo "No sysext built. Skipping."
+            exit 0
+          fi
+
+
+          # rename the sysext to match the expected naming convention for releases
+          mv ./${BASE}.raw ./${TAGNAME}.raw
+          echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
+          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
+
+
+
+          echo "Creating new release for: ${BASE}"
+
+          {
+          echo "Release:"
+          echo "\`\`\`"
+          cat ./SHA256SUMS
+          echo "\`\`\`"
+          echo ""
+          if [[ "${KEYPACKAGE}" != "NIL" ]]; then
+              echo "Key package: ${KEYPACKAGE} (version: ${KEYVERSION})"
+          else
+              echo "No key package for this sysext."
+          fi
+          echo ""
+          echo "Built using input files:"
+          echo "\`\`\`"
+          cat ./${SYSEXT}.inputs
+          echo "\`\`\`"
+          } > notes
+
+          gh release delete \
+            --cleanup-tag \
+            --yes \
+            "${TAGNAME}" \
+            || true
+
+          gh release create \
+            --title "${SYSEXT} ${VERSION} for Debian ${VERSION_ID} (${ARCH})" \
+            --notes-file notes \
+            "${TAGNAME}" \
+            --latest=false \
+            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+
       - name: "named release for extensions"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;'
+          SYSEXTS: 'sysext-code;sysext-dev;sysext-edge;'
         shell: bash
         run: |
           set -euxo pipefail
@@ -455,7 +811,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;'
+          SYSEXTS: 'sysext-code;sysext-dev;sysext-edge;'
         shell: bash
         run: |
           set -euxo pipefail
