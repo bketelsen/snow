@@ -7,3 +7,6 @@ set -e
 if [[ -f /usr/lib/tmpfiles.d/debian.conf ]]; then
     sed -i '/\/etc\/pam.d/d' /usr/lib/tmpfiles.d/debian.conf
 fi
+
+mkdir -p /usr/src
+echo "keep" > /usr/src/.keep
