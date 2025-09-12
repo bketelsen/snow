@@ -3,7 +3,7 @@ set -euo pipefail
 
 
 # find the first file in ./mkosi.output named snowDesktop_*x86-64.raw
-image_file=$(find ./mkosi.output -name "SNOW_*x86-64.raw" | head -n 1)
+image_file=$(find ./mkosi.output -maxdepth 1 -name "SNOW_*x86-64.raw" | head -n 1)
 
 if [ -z "$image_file" ]; then
     echo "No image file found"
