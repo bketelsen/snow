@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# snowext - Snow Linux extension management tool
-# Usage: snowext <verb> <parameter>
+# snowctl - Snow Linux extension management tool
+# Usage: snowctl <verb> <parameter>
 # Verbs: install, update, uninstall
 
 set -euo pipefail
