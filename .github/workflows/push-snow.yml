@@ -218,7 +218,7 @@ jobs:
               --latest=false \
               ./SHA256SUMS
           fi
-      - name: "Maybe publish sysext: sysext-dev"
+      - name: "Build: sysext-dev"
         env:
           SYSEXT: sysext-dev
           PR: ${{ github.event_name == 'pull_request' }}
@@ -294,7 +294,7 @@ jobs:
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
-      - name: "Publish sysext if changed"
+      - name: "Maybe Publish: sysext-dev"
         env:
           SYSEXT: sysext-dev
           PR: ${{ github.event_name == 'pull_request' }}
@@ -393,7 +393,7 @@ jobs:
             ./SHA256SUMS \
             ./notes
 
-      - name: "Maybe publish sysext: sysext-incus"
+      - name: "Build: sysext-incus"
         env:
           SYSEXT: sysext-incus
           PR: ${{ github.event_name == 'pull_request' }}
@@ -469,7 +469,7 @@ jobs:
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
-      - name: "Publish sysext if changed"
+      - name: "Maybe Publish: sysext-incus"
         env:
           SYSEXT: sysext-incus
           PR: ${{ github.event_name == 'pull_request' }}

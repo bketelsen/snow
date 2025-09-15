@@ -1,4 +1,4 @@
-      - name: "Maybe publish sysext: %%SYSEXT%%"
+      - name: "Build: %%SYSEXT%%"
         env:
           SYSEXT: %%SYSEXT%%
           PR: ${{ github.event_name == 'pull_request' }}
@@ -74,7 +74,7 @@
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
-      - name: "Publish sysext if changed"
+      - name: "Maybe Publish: %%SYSEXT%%"
         env:
           SYSEXT: %%SYSEXT%%
           PR: ${{ github.event_name == 'pull_request' }}
