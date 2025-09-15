@@ -12,22 +12,13 @@
           rm -rf mkosi.output/${SYSEXT}.arch
           rm -rf mkosi.output/${SYSEXT}.tagname
           rm -rf mkosi.output/SHA256SUMS
-          # For PRs, only build if the content changed
-          if [[ "${PR}" == "true" ]]; then
-              pushd "mkosi.images/${SYSEXT}"
 
-              diff="$(
-                git diff origin/main HEAD --stat -- . ; \
-              )"
-              if [[ -z "${diff}" ]]; then
-                  echo "Skipping: No changes for this sysext in this PR"
-                  exit 0
-              fi
-              popd
-              echo "Detected changes for this sysext in this PR. Building."
-                mkosi build --profile=sysext-only --dependency=${SYSEXT}
-              exit 0
-          fi
+          # since we skipped building the sysexts when building the main image,
+          # we need to build the sysext now
+          echo "Building sysext: ${SYSEXT}"
+          mkosi build --profile=sysext-only --dependency=${SYSEXT}
+
+
 
           # Check if we are asked to force a rebuild
           if [ -n ${FORCE_REBUILD+x} ]; then
