@@ -29,6 +29,16 @@
 
           if [[ "${PR}" == "true" ]]; then
             echo "Pull request detected. Skipping release creation for ${TAGNAME}."
+            rm -rf  \
+              ./${TAGNAME}.raw.zst \
+              ./${TAGNAME}.efi \
+              ./${TAGNAME}.esp.raw.zst \
+              ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
+              ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
+              ./${TAGNAME}.usr-x86-64.*.raw.zst \
+              ./inputs \
+              ./SHA256SUMS \
+              ./notes
             exit 0
           fi
 
@@ -85,6 +95,6 @@
             ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
             ./${TAGNAME}.usr-x86-64.*.raw.zst
-            ./inputs
-            ./SHA256SUMS
+            ./inputs \
+            ./SHA256SUMS \
             ./notes
