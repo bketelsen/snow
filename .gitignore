@@ -10,3 +10,4 @@ mkosi.crt
 .mkosi-private
 /docs/*/
 .save
+/scripts/tmp.sh
