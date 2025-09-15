@@ -7,6 +7,10 @@
         run: |
           set -euxo pipefail
 
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           echo "Sleeping to wait for previous releases to be ready..."
           sleep 180 # wait for previous releases to be ready
 

@@ -10,6 +10,9 @@ build-compress:
 build-ext extension:
   mkosi build --profile=sysext-only --dependency={{extension}}
 
+build-main:
+  mkosi build --dependency=base
+
 bump:
   mkosi bump
 
