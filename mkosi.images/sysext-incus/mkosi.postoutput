@@ -5,7 +5,7 @@ KEYPACKAGE=incus
 KEYVERSION=NIL
 
 # find the first file in the output directory that matches the pattern "sysext-dev*.manifest"
-MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "sysext-dev*.manifest" | head -n 1)
+MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "sysext-incus*.manifest" | head -n 1)
 echo "Found manifest file: $MANIFEST_FILE"
 KEYVERSION=$(cat $MANIFEST_FILE | jq -r --arg KEYPACKAGE ${KEYPACKAGE} '.packages[] | select (.name == $KEYPACKAGE) | .version')
 
