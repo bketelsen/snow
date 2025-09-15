@@ -77,3 +77,14 @@
             ./${TAGNAME}.manifest \
             ./SHA256SUMS \
             ./inputs
+
+          rm -rf  \
+            ./${TAGNAME}.raw.zst \
+            ./${TAGNAME}.efi \
+            ./${TAGNAME}.esp.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64.*.raw.zst
+            ./inputs
+            ./SHA256SUMS
+            ./notes

@@ -47,7 +47,7 @@ jobs:
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes
+          mkosi build --compress-output=yes --dependency=base
       - name: "push main image"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
@@ -127,6 +127,17 @@ jobs:
             ./${TAGNAME}.manifest \
             ./SHA256SUMS \
             ./inputs
+
+          rm -rf  \
+            ./${TAGNAME}.raw.zst \
+            ./${TAGNAME}.efi \
+            ./${TAGNAME}.esp.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
+            ./${TAGNAME}.usr-x86-64.*.raw.zst
+            ./inputs
+            ./SHA256SUMS
+            ./notes
       - name: "named release for SNOW Linux"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
