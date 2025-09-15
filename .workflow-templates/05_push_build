@@ -94,7 +94,8 @@
             ./${TAGNAME}.esp.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
-            ./${TAGNAME}.usr-x86-64.*.raw.zst
+            ./${TAGNAME}.usr-x86-64.*.raw.zst \
+            ./${TAGNAME}.manifest \
             ./inputs \
             ./SHA256SUMS \
             ./notes

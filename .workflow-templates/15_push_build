@@ -166,3 +166,9 @@
             "${TAGNAME}" \
             --latest=false \
             ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+
+          rm -rf  \
+            ./${TAGNAME}.raw \
+            ./${SYSEXT}.inputs \
+            ./SHA256SUMS \
+            ./notes

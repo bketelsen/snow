@@ -144,7 +144,8 @@ jobs:
             ./${TAGNAME}.esp.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
             ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
-            ./${TAGNAME}.usr-x86-64.*.raw.zst
+            ./${TAGNAME}.usr-x86-64.*.raw.zst \
+            ./${TAGNAME}.manifest \
             ./inputs \
             ./SHA256SUMS \
             ./notes
@@ -386,6 +387,12 @@ jobs:
             --latest=false \
             ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
+          rm -rf  \
+            ./${TAGNAME}.raw \
+            ./${SYSEXT}.inputs \
+            ./SHA256SUMS \
+            ./notes
+
       - name: "Maybe publish sysext: sysext-incus"
         env:
           SYSEXT: sysext-incus
@@ -555,6 +562,12 @@ jobs:
             --latest=false \
             ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
 
+          rm -rf  \
+            ./${TAGNAME}.raw \
+            ./${SYSEXT}.inputs \
+            ./SHA256SUMS \
+            ./notes
+
       - name: "named release for extensions"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
@@ -564,12 +577,13 @@ jobs:
         run: |
           set -euxo pipefail
 
-          echo "Sleeping to wait for previous releases to be ready..."
-          sleep 180 # wait for previous releases to be ready
+
           if [[ "${PR}" == "true" ]]; then
             echo "Pull request detected. Skipping named release creation."
             exit 0
           fi
+          echo "Sleeping to wait for previous releases to be ready..."
+          sleep 180 # wait for previous releases to be ready
           gh release list --limit 2000 --json tagName > releases.json
 
           for sysext in $(echo ${SYSEXTS} | tr ';' ' '); do
@@ -641,6 +655,10 @@ jobs:
         run: |
           set -euxo pipefail
 
+          if [[ "${PR}" == "true" ]]; then
+            echo "Pull request detected. Skipping release creation."
+            exit 0
+          fi
           echo "Sleeping to wait for previous releases to be ready..."
           sleep 180 # wait for previous releases to be ready
 

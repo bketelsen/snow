@@ -7,12 +7,13 @@
         run: |
           set -euxo pipefail
 
-          echo "Sleeping to wait for previous releases to be ready..."
-          sleep 180 # wait for previous releases to be ready
+
           if [[ "${PR}" == "true" ]]; then
             echo "Pull request detected. Skipping named release creation."
             exit 0
           fi
+          echo "Sleeping to wait for previous releases to be ready..."
+          sleep 180 # wait for previous releases to be ready
           gh release list --limit 2000 --json tagName > releases.json
 
           for sysext in $(echo ${SYSEXTS} | tr ';' ' '); do
