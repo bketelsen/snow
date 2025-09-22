@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
+[Unit]
+ConditionFirstBoot=yes
+ConditionPathIsReadWrite=/etc
+
+DefaultDependencies=no
+
+Before=basic.target
+Conflicts=shutdown.target
+Before=shutdown.target
+After=preset-global.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=systemctl enable gdm.service
+
+[Install]
+WantedBy=basic.target

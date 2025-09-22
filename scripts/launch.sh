@@ -41,8 +41,6 @@ echo "When the repart is complete, enter 'systemctl poweroff'"
 incus console --type=vga "$instance_name"
 
 sleep 2
-# this blocks until poweroff
-incus console --type=vga "$instance_name"
 
 echo "reconfiguring instance..."
 sleep 3
