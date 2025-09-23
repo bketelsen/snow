@@ -1,7 +1,0 @@
-# SPDX-License-Identifier: LGPL-2.1-or-later
-
-# incus
-enable incus-lxcfs.service
-enable incus-startup.service
-enable incus.socket
-enable incus.service
