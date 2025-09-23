@@ -83,8 +83,6 @@ jobs:
               ./${TAGNAME}.raw.zst \
               ./${TAGNAME}.efi \
               ./${TAGNAME}.esp.raw.zst \
-              ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
-              ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
               ./${TAGNAME}.usr-x86-64.*.raw.zst \
               ./inputs \
               ./SHA256SUMS \
@@ -131,8 +129,6 @@ jobs:
             ./${TAGNAME}.raw.zst \
             ./${TAGNAME}.efi \
             ./${TAGNAME}.esp.raw.zst \
-            ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
-            ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
             ./${TAGNAME}.usr-x86-64.*.raw.zst \
             ./${TAGNAME}.manifest \
             ./SHA256SUMS \
@@ -142,8 +138,6 @@ jobs:
             ./${TAGNAME}.raw.zst \
             ./${TAGNAME}.efi \
             ./${TAGNAME}.esp.raw.zst \
-            ./${TAGNAME}.usr-x86-64-verity-sig.*.raw.zst \
-            ./${TAGNAME}.usr-x86-64-verity.*.raw.zst \
             ./${TAGNAME}.usr-x86-64.*.raw.zst \
             ./${TAGNAME}.manifest \
             ./inputs \
