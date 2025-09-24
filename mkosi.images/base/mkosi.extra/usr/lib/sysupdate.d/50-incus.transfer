@@ -4,7 +4,7 @@ ProtectVersion=%A
 
 [Source]
 Type=url-file
-Path=https://extensions.snowlinux.org/extensions/sysext-incus/
+Path=https://extensions.snowlinux.org/extensions/
 MatchPattern=sysext-incus_@v_%a.raw
 
 [Target]

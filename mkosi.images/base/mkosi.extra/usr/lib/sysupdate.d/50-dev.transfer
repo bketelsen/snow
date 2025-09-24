@@ -4,7 +4,7 @@ ProtectVersion=%A
 
 [Source]
 Type=url-file
-Path=https://extensions.snowlinux.org/extensions/sysext-dev/
+Path=https://extensions.snowlinux.org/extensions/
 MatchPattern=sysext-dev_@v_%a.raw
 
 [Target]
