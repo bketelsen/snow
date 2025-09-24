@@ -57,7 +57,10 @@ jobs:
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes --dependency=base --cache-directory=/home/runner/mkosi/cache
+          mkosi build --compress-output=yes --dependency=base \
+            --cache-directory=/home/runner/mkosi/cache \
+            --build-directory=/home/runner/mkosi/build
+
       - name: "push main image"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
