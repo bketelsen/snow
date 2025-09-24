@@ -2,7 +2,7 @@
 
 **DO NOT USE THIS YET. Seriously. Just Don't.**
 
-SNOW is a fully customizable immutable Linux distribution implementing the
+SNOW is a customized immutable Linux distribution implementing many of the
 concepts described in
 [Fitting Everything Together](https://0pointer.net/blog/fitting-everything-together.html).
 
@@ -11,13 +11,6 @@ of simplification through removal of options.
 
 Note that SNOW is still in development, and we don't provide any backwards
 compatibility guarantees at all.
-
-The crucial difference that makes SNOW unique compared to other immutable
-distributions is that users build the SNOW image themselves and sign it
-with their own keys instead of installing vendor signed images. This allows
-configuring the image to your liking by having full control over which
-distribution is used as the base and which packages are installed into the
-image.
 
 The SNOW image is built using [mkosi](https://github.com/systemd/mkosi).
 You will need to install the current main branch of mkosi to build current
@@ -33,16 +26,15 @@ SNOW has some strong opinions:
 - Minimal but usable Gnome installation
 - Flatpak enabled
 - Immutable with A/B updates
-- Extras installed via systemd-sysext
+- VS Code and Microsoft Edge installed in base image
+- `mise` installed on base image for userspace development tooling
+- Extras installed via systemd-sysext. Currently available:
+- - sysext-incus (incus for containers and virtual machines)
+- - sysext-dev (common dev tools, make, gcc, etc.)
 
 ## Building
 
 To build the image, run `mkosi -B -f` from the SNOW repository.
-
-To update the system after installation, you clone the SNOW repository
-or your fork of it, make sure `mkosi.local.conf` is configured to your liking and
-run `mkosi -B -ff sysupdate -- update --reboot` which will update the system using
-`systemd-sysupdate` and then reboot.
 
 ## Installation
 

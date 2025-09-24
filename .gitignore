@@ -11,3 +11,4 @@ mkosi.crt
 /docs/*/
 .save
 /scripts/tmp.sh
+docs/sysext-*/index.md
