@@ -34,6 +34,13 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize build space
+        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+        continue-on-error: true
+        with:
+          target-dir: /work/home/runner/.cache
+          mount-opts: compress-force=zstd:2
+          loopback-free: 0.9
       - name: setup-mkosi
         uses: systemd/mkosi@main
       - name: checkout repo
@@ -566,7 +573,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;sysext-incus;'
+          SYSEXTS: "sysext-dev;sysext-incus;"
         shell: bash
         run: |
           set -euxo pipefail
@@ -644,7 +651,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;sysext-incus;'
+          SYSEXTS: "sysext-dev;sysext-incus;"
         shell: bash
         run: |
           set -euxo pipefail
