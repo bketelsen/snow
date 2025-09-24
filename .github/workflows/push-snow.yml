@@ -38,7 +38,7 @@ jobs:
         uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
         continue-on-error: true
         with:
-          target-dir: /var/lib/containers
+          target-dir: ~/.local/share/mkosi
           mount-opts: compress-force=zstd:2
           loopback-free: 0.9
       - name: setup-mkosi
@@ -54,7 +54,7 @@ jobs:
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes --dependency=base --cache-directory=/var/lib/containers/mkosi-cache
+          mkosi build --compress-output=yes --dependency=base --cache-directory=~/.local/share/mkosi/cache
       - name: "push main image"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
