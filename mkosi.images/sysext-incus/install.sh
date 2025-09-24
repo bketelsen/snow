@@ -22,4 +22,6 @@ EOF
 apt-get update
 apt-get install ceph-common incus incus-ui-canonical --yes
 
+systemctl enable incus.service incus.socket incus-lxcfs.service incus-startup.service
+
 exit 0
