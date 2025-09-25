@@ -70,7 +70,7 @@ jobs:
           OUTPUTDIR="./mkosi.output"
 
           # find the first file in the output directory that matches the pattern "SNOW_*.manifest"
-          MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "SNOW_*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "SNOW_*_x86-64.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           ARCH=$(jq -r '.config.architecture' "$MANIFEST_FILE")
@@ -224,9 +224,9 @@ jobs:
               --latest=false \
               ./SHA256SUMS
           fi
-      - name: "Build: sysext-dev"
+      - name: "Build: dev"
         env:
-          SYSEXT: sysext-dev
+          SYSEXT: dev
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
@@ -253,7 +253,7 @@ jobs:
           fi
 
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension
@@ -297,9 +297,9 @@ jobs:
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
-      - name: "Maybe Publish: sysext-dev"
+      - name: "Maybe Publish: dev"
         env:
-          SYSEXT: sysext-dev
+          SYSEXT: dev
           PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
@@ -321,7 +321,7 @@ jobs:
             exit 0
           fi
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension
@@ -396,9 +396,9 @@ jobs:
             ./SHA256SUMS \
             ./notes
 
-      - name: "Build: sysext-incus"
+      - name: "Build: incus"
         env:
-          SYSEXT: sysext-incus
+          SYSEXT: incus
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
         shell: bash
@@ -425,7 +425,7 @@ jobs:
           fi
 
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension
@@ -469,9 +469,9 @@ jobs:
           fi
           echo 1 > ./mkosi.output/${SYSEXT}.release_needed
           echo "Detected changes. Proceeding to publish new sysext for: ${TAGNAME}"
-      - name: "Maybe Publish: sysext-incus"
+      - name: "Maybe Publish: incus"
         env:
-          SYSEXT: sysext-incus
+          SYSEXT: incus
           PR: ${{ github.event_name == 'pull_request' }}
           GH_TOKEN: ${{ github.token }}
         if: (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
@@ -493,7 +493,7 @@ jobs:
             exit 0
           fi
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension
@@ -572,7 +572,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;sysext-incus;'
+          SYSEXTS: 'dev;incus;'
         shell: bash
         run: |
           set -euxo pipefail
@@ -650,7 +650,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: 'sysext-dev;sysext-incus;'
+          SYSEXTS: 'dev;incus;'
         shell: bash
         run: |
           set -euxo pipefail

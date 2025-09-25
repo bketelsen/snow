@@ -8,7 +8,7 @@
           OUTPUTDIR="./mkosi.output"
 
           # find the first file in the output directory that matches the pattern "SNOW_*.manifest"
-          MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "SNOW_*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find "$OUTPUTDIR" -maxdepth 1 -type f -name "SNOW_*_x86-64.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           ARCH=$(jq -r '.config.architecture' "$MANIFEST_FILE")

@@ -27,7 +27,7 @@
           fi
 
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find ./mkosi.output -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension
@@ -95,7 +95,7 @@
             exit 0
           fi
           # find the first file in the output directory that matches the pattern "sysext-code*.manifest"
-          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "${SYSEXT}*.manifest" | head -n 1)
+          MANIFEST_FILE=$(find . -maxdepth 1 -type f -name "SNOW*_${SYSEXT}.manifest" | head -n 1)
           echo "Found manifest file: $MANIFEST_FILE"
 
           # get the filename without the directory and without the extension

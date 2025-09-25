@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# get a list of all the sysext and confext image directories in mkosi.images directory
-image_dirs=$(find mkosi.images -maxdepth 1 -type d \( -name "confext-*" -o -name "sysext-*" \))
-for dir in $image_dirs; do
-    # remove "mkosi.images/" prefix to get the image name
-    image_name=${dir#mkosi.images/}
-    echo "$image_name"
+# get a list of all the directory names under "mkosi.images" that aren't named "base"
+for d in mkosi.images/*/ ; do
+    d=${d%*/}
+    d=${d##*/}
+    if [[ "${d}" == "base" ]]; then
+        continue
+    fi
+    echo "${d}"
 done
