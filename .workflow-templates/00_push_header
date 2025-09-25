@@ -59,4 +59,4 @@ jobs:
           mkosi build --compress-output=yes \
             --cache-directory=/home/runner/mkosi/cache \
             --build-directory=/home/runner/mkosi/build \
-            --work-directory=/home/runner/mkosi/work
+            --workspace-directory=/home/runner/mkosi/work
