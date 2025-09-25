@@ -126,7 +126,7 @@
 
           # rename the sysext to match the expected naming convention for releases
           mv ./${BASE}.raw.zst ./${TAGNAME}.raw.zst
-          echo "Renamed ./${BASE}.raw.zst to ./${TAGNAME}.raw.zst
+          echo "Renamed ./${BASE}.raw.zst to ./${TAGNAME}.raw.zst"
           sha256sum ${TAGNAME}.raw.zst > ./SHA256SUMS
 
 
