@@ -34,6 +34,15 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          mkdir -p /home/runner/mkosi
+      - name: Maximize build space
+        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+        continue-on-error: true
+        with:
+          target-dir: /home/runner/mkosi
+          mount-opts: compress-force=zstd:2
+          loopback-free: 0.9
       - name: setup-mkosi
         uses: systemd/mkosi@main
       - name: checkout repo
@@ -47,7 +56,10 @@ jobs:
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes
+          mkosi build --compress-output=yes \
+            --cache-directory=/home/runner/mkosi/cache \
+            --build-directory=/home/runner/mkosi/build \
+            --work-directory=/home/runner/mkosi/work
       - name: "push main image"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
