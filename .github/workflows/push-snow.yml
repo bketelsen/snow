@@ -34,16 +34,6 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - run: |
-
-          mkdir -p /home/runner/mkosi
-      - name: Maximize build space
-        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
-        continue-on-error: true
-        with:
-          target-dir: /home/runner/mkosi
-          mount-opts: compress-force=zstd:2
-          loopback-free: 0.9
       - name: setup-mkosi
         uses: systemd/mkosi@main
       - name: checkout repo
@@ -57,10 +47,7 @@ jobs:
           cp $HOME/secrets/mkosi.crt .
           cp $HOME/secrets/mkosi.key .
           chmod 600 ./mkosi.key
-          mkosi build --compress-output=yes --dependency=base \
-            --cache-directory=/home/runner/mkosi/cache \
-            --build-directory=/home/runner/mkosi/build
-
+          mkosi build --compress-output=yes
       - name: "push main image"
         env:
           PR: ${{ github.event_name == 'pull_request' }}
@@ -242,10 +229,7 @@ jobs:
 
           # since we skipped building the sysexts when building the main image,
           # we need to build the sysext now
-          echo "Building sysext: ${SYSEXT}"
-          mkosi build --profile=sysext-only --dependency=${SYSEXT}
-
-
+          echo "Processing sysext: ${SYSEXT}"
 
           # Check if we are asked to force a rebuild
           if [ -n ${FORCE_REBUILD+x} ]; then
@@ -348,16 +332,16 @@ jobs:
           # This is BASE now
           TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
 
-          if [[ ! -f ./${BASE}.raw ]]; then
+          if [[ ! -f ./${BASE}.raw.zst ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
 
 
           # rename the sysext to match the expected naming convention for releases
-          mv ./${BASE}.raw ./${TAGNAME}.raw
-          echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
-          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
+          mv ./${BASE}.raw.zst ./${TAGNAME}.raw.zst
+          echo "Renamed ./${BASE}.raw.zst to ./${TAGNAME}.raw.zst
+          sha256sum ${TAGNAME}.raw.zst > ./SHA256SUMS
 
 
 
@@ -392,10 +376,10 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
           rm -rf  \
-            ./${TAGNAME}.raw \
+            ./${TAGNAME}.raw.zst \
             ./${SYSEXT}.inputs \
             ./SHA256SUMS \
             ./notes
@@ -417,10 +401,7 @@ jobs:
 
           # since we skipped building the sysexts when building the main image,
           # we need to build the sysext now
-          echo "Building sysext: ${SYSEXT}"
-          mkosi build --profile=sysext-only --dependency=${SYSEXT}
-
-
+          echo "Processing sysext: ${SYSEXT}"
 
           # Check if we are asked to force a rebuild
           if [ -n ${FORCE_REBUILD+x} ]; then
@@ -523,16 +504,16 @@ jobs:
           # This is BASE now
           TAGNAME="${SYSEXT}_${VERSION}_${ARCH}"
 
-          if [[ ! -f ./${BASE}.raw ]]; then
+          if [[ ! -f ./${BASE}.raw.zst ]]; then
             echo "No sysext built. Skipping."
             exit 0
           fi
 
 
           # rename the sysext to match the expected naming convention for releases
-          mv ./${BASE}.raw ./${TAGNAME}.raw
-          echo "Renamed ./${BASE}.raw to ./${TAGNAME}.raw"
-          sha256sum ${TAGNAME}.raw > ./SHA256SUMS
+          mv ./${BASE}.raw.zst ./${TAGNAME}.raw.zst
+          echo "Renamed ./${BASE}.raw.zst to ./${TAGNAME}.raw.zst
+          sha256sum ${TAGNAME}.raw.zst > ./SHA256SUMS
 
 
 
@@ -567,10 +548,10 @@ jobs:
             --notes-file notes \
             "${TAGNAME}" \
             --latest=false \
-            ./${TAGNAME}.raw ./SHA256SUMS ./${SYSEXT}.inputs
+            ./${TAGNAME}.raw.zst ./SHA256SUMS ./${SYSEXT}.inputs
 
           rm -rf  \
-            ./${TAGNAME}.raw \
+            ./${TAGNAME}.raw.zst \
             ./${SYSEXT}.inputs \
             ./SHA256SUMS \
             ./notes
@@ -579,7 +560,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: "sysext-dev;sysext-incus;"
+          SYSEXTS: 'sysext-dev;sysext-incus;'
         shell: bash
         run: |
           set -euxo pipefail
@@ -657,7 +638,7 @@ jobs:
         env:
           PR: ${{ github.event_name == 'pull_request' }}
           FORCE_REBUILD: ${{ inputs.force-rebuild }}
-          SYSEXTS: "sysext-dev;sysext-incus;"
+          SYSEXTS: 'sysext-dev;sysext-incus;'
         shell: bash
         run: |
           set -euxo pipefail

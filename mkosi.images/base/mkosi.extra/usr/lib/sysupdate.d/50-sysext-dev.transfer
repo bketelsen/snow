@@ -1,11 +1,11 @@
 [Transfer]
-Features=dev
+Features=sysext-dev
 ProtectVersion=%A
 
 [Source]
 Type=url-file
-Path=https://extensions.snowlinux.org/extensions/
-MatchPattern=sysext-dev_@v_%a.raw
+Path=https://extensions.snowlinux.org/extensions/sysext-dev/
+MatchPattern=sysext-dev_@v_%a.raw.zst
 
 [Target]
 InstancesMax=2
