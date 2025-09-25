@@ -18,6 +18,12 @@ bump:
 
 clean:
   mkosi clean -ff
+  rm -rf ./mkosi.output/*.SHA256SUMS
+
+deploy: clean
+  mkosi -ff
+  ./scripts/sums.sh
+  ./scripts/deploy.sh
 
 deep-clean:
   mkosi clean -ff

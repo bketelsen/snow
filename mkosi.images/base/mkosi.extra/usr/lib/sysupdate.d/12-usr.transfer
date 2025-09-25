@@ -6,7 +6,7 @@ Verify=no
 
 [Source]
 Type=url-file
-Path=https://extensions.snowlinux.org/extensions/SNOW/
+Path=https://files.snowlinux.org/
 MatchPattern=%M_@v_%a.usr-%a.@u.raw
 
 [Target]
