@@ -1,16 +1,16 @@
 # Default recipe
 default: build
 
-build:
+build: snowctl
   mkosi build
 
-build-compress:
+build-compress: snowctl
   mkosi build --compress-output=yes
 
 build-ext extension:
   mkosi build --profile=sysext-only --dependency={{extension}}
 
-build-main:
+build-main: snowctl
   mkosi build --dependency=base
 
 bump:
@@ -20,7 +20,7 @@ clean:
   mkosi clean -ff
   rm -rf ./mkosi.output/*.SHA256SUMS
 
-deploy: clean
+deploy: clean snowctl
   mkosi -ff
   ./scripts/sums.sh
   ./scripts/deploy.sh
@@ -37,3 +37,7 @@ launch:
 
 kill:
   ./scripts/kill.sh
+
+snowctl:
+  cd snowctl && go build -o snowctl .
+  cp snowctl/snowctl mkosi.images/base/mkosi.extra/usr/local/bin/

@@ -12,3 +12,6 @@ mkosi.crt
 .save
 /scripts/tmp.sh
 docs/sysext-*/index.md
+# go binary
+snowctl/snowctl
+mkosi.images/base/mkosi.extra/usr/local/bin/snowctl
