@@ -82,11 +82,6 @@ echo 'foo' |
 	cmd.Flags().BoolP("async", "a", false, "Run async")
 	cmd.Flags().BoolVarP(&now, "now", "n", false, "Apply changes now")
 
-	_ = cmd.Flags().MarkHidden("age")
-	_ = cmd.Flags().MarkHidden("duration")
-	_ = cmd.Flags().MarkHidden("idk")
-	_ = cmd.Flags().MarkHidden("error")
-
 	cmd.AddGroup(&cobra.Group{
 		ID:    "features",
 		Title: "Manage Features",
