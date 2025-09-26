@@ -19,56 +19,9 @@ func main() {
 
 	cmd := &cobra.Command{
 		Use:   "snowctl [args]",
-		Short: "An snowctl program!",
-		Long: `Manage your snow system with snowctl.
+		Short: "Manage your snow system with snowctl",
+		Long:  `Manage your snow system with snowctl.`,
 
-It doesn’t really do anything, but that’s the point.™`,
-		Example: `
-# Run it:
-snowctl
-
-# Run it with some arguments:
-FOO=bar ZAZ="quoted value" snowctl --name=Carlos -a -s Becker -a
-
-# Run a subcommand with an argument:
-snowctl sub --async --foo=xyz --async arguments
-
-# Run with a quoted string:
-snowctl sub "quoted string"
-
-# Subcommand aliases:
-snowctl s "subcommand alias"
-snowctl subcommand "subcommand alias"
-snowctl s another --thing
-
-# Mix and match:
-snowctl sub "multi-word quoted string" --name "another quoted string" -a
-
-# Multi-line:
-ENV_A=0 ENV_B=0 ENV_C=0 \
-  CERT_FILE=/path/to/chain.pem KEY_FILE=/path/to/key.pem \
-  snowctl sub "quoted argument"
-
-# Run a subcommand's subcommand with an argument:
-snowctl sub another args --flag
-
-# Pipe snowctl:
-echo "foo" | snowctl > bar.txt
-
-# Redirects:
-snowctl < in.txt > out.txt
-snowctl 2>&1 1>/dev/null
-snowctl 1>&2 2>/dev/null
-
-# And / Or:
-foo || snowctl
-snowctl && foo
-
-# Another pipe snowctl:
-echo 'foo' |
-  snowctl sub |
-  cat -
-		`,
 		RunE: func(c *cobra.Command, _ []string) error {
 			if now {
 				fmt.Println("Applying changes now...")
@@ -79,7 +32,6 @@ echo 'foo' |
 			return nil
 		},
 	}
-	cmd.Flags().BoolP("async", "a", false, "Run async")
 	cmd.Flags().BoolVarP(&now, "now", "n", false, "Apply changes now")
 
 	cmd.AddGroup(&cobra.Group{
@@ -90,7 +42,12 @@ echo 'foo' |
 		ID:    "extensions",
 		Title: "Manage Extensions",
 	})
-	sub := &cobra.Command{
+	installer := &cobra.Command{
+		Use:   "installer",
+		Short: "Install Snow on this system",
+	}
+	cmd.AddCommand(installer)
+	feature := &cobra.Command{
 		Use:     "feature [command] [flags] [args]",
 		Aliases: []string{"f"},
 		Short:   "Manage features",
@@ -99,14 +56,12 @@ echo 'foo' |
 			other()
 		},
 	}
-	cmd.AddCommand(sub)
-	sub.AddCommand(&cobra.Command{
-		Use:   "another",
-		Short: "another sub command",
+	cmd.AddCommand(feature)
+	feature.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all features",
 		Example: `
-snowctl sub another --foo=bar
-snowctl subcommand "subcommand alias"
-snowctl s another --thing
+snowctl feature list
 `,
 		RunE: func(c *cobra.Command, _ []string) error {
 			cmd.Println("Working...")
@@ -119,11 +74,32 @@ snowctl s another --thing
 			return nil
 		},
 	})
-
-	cmd.AddCommand(&cobra.Command{
-		Use:     "ext",
-		Short:   "Extension management",
+	ext := &cobra.Command{
+		Use:     "ext [command] [flags] [args]",
+		Aliases: []string{"e"},
+		Short:   "Manage extensions",
 		GroupID: "extensions",
+		Run: func(c *cobra.Command, _ []string) {
+			other()
+		},
+	}
+	cmd.AddCommand(ext)
+	ext.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all extensions",
+		Example: `
+snowctl ext list
+`,
+		RunE: func(c *cobra.Command, _ []string) error {
+			cmd.Println("Working...")
+			select {
+			case <-time.After(time.Second * 5):
+				cmd.Println("Done!")
+			case <-c.Context().Done():
+				return c.Context().Err()
+			}
+			return nil
+		},
 	})
 
 	// This is where the magic happens.

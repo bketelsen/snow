@@ -40,4 +40,5 @@ kill:
 
 snowctl:
   cd snowctl && go build -o snowctl .
+  mkdir -p mkosi.images/base/mkosi.extra/usr/local/bin/
   cp snowctl/snowctl mkosi.images/base/mkosi.extra/usr/local/bin/
