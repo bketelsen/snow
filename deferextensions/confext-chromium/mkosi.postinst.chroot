@@ -1,9 +1,0 @@
-#!/bin/bash
-# SPDX-License-Identifier: LGPL-2.1-or-later
-set -e
-
-# remove etc/alternatives
-rm -rf /etc/alternatives/
-
-# remove whatever the heck is in /etc/X11 that we don't want in the sysext
-rm -rf /etc/X11

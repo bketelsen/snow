@@ -6,5 +6,3 @@ set -e
 # systemd-tmpfiles to symlink individual directories from it to /etc.
 mkdir -p "$BUILDROOT/usr/share/factory/"
 cp --archive --no-target-directory --update=none "$BUILDROOT/etc" "$BUILDROOT/usr/share/factory/etc"
-mkdir -p "$BUILDROOT/usr/share/factory/opt/microsoft/msedge"
-cp --archive --no-target-directory --update=none "$BUILDROOT/opt/microsoft/msedge" "$BUILDROOT/usr/share/factory/opt/microsoft/msedge"

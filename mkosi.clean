@@ -6,5 +6,5 @@ set -o nounset
 rm -rf "${OUTPUTDIR:?}/${IMAGE_ID:?}"*
 rm -rf "${OUTPUTDIR:?}/base"
 rm -rf "${OUTPUTDIR:?}/base.vmlinuz"
-rm -rf "${OUTPUTDIR:?}/confext*"
-rm -rf "${OUTPUTDIR:?}/sysext*"
+rm -rf "${OUTPUTDIR:?}/base.manifest"
+rm -rf "${OUTPUTDIR:?}/SNOW*"

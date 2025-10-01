@@ -1,23 +1,70 @@
 #!/bin/bash
-# SPDX-License-Identifier: LGPL-2.1-or-later
-set -e
+# SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
+# SPDX-FileCopyrightText: 2023 Harald Sitter <sitter@kde.org>
 
-if command -v authselect >/dev/null; then
-    authselect select local
-    authselect enable-feature with-systemd-homed
-fi
+set -ex
 
-if [[ -d /etc/pam.d ]]; then
-    find /etc/pam.d -mindepth 1 -exec mv {} /usr/lib/pam.d \;
-    rmdir /etc/pam.d
-fi
+env
 
-# Get rid of obsolete stuff in the pam stack.
-find /usr/lib/pam.d/ -mindepth 1 -exec sed --in-place '/pam_shells.so/d' {} \;
-find /usr/lib/pam.d/ -mindepth 1 -exec sed --in-place '/pam_securetty.so/d' {} \;
+mkdir --mode 0700 /system # for the kde-linux-overlay.service
+mkdir -p /snap               # for snapd (will get a subvolume mounted into that snapd then mounts the snaps into)
+mkdir -p /media # for snap, wants this to exist or fails when trying to create it
 
-# Fedora disables the userdb ssh dropin by default, but helpfully leaves it available in
-# the package so that we can just symlink it to a name that will be picked up by systemd-tmpfiles.
-if [[ -f /usr/lib/tmpfiles.d/20-systemd-userdb.conf.example ]]; then
-    ln --symbolic 20-systemd-userdb.conf.example /usr/lib/tmpfiles.d/20-systemd-userdb.conf
-fi
+export SYSTEMD_ESP_PATH="$BOOT_MNT"
+mkdir -p --mode 0700 "$SYSTEMD_ESP_PATH"
+bootctl install
+echo 'timeout 5' >> "$SYSTEMD_ESP_PATH/loader/loader.conf"
+#cp /usr/share/edk2-shell/x64/Shell.efi "$SYSTEMD_ESP_PATH/shellx64.efi"
+
+#Copied "/usr/lib/systemd/boot/efi/systemd-bootx64.efi.signed" to "/usr/share/factory/boot/EFI/systemd/systemd-bootx64.efi".
+#Copied "/usr/lib/systemd/boot/efi/systemd-bootx64.efi.signed" to "/usr/share/factory/boot/EFI/BOOT/BOOTX64.EFI".
+
+
+# WARNING: only set up os-release after the build otherwise kde-build doesn't know how to handle the system currently
+cat <<- EOF > /usr/lib/os-release
+NAME="Snow Linux"
+PRETTY_NAME="Snow Linux"
+ID=snow-linux
+VERSION_ID="$VERSION_DATE"
+BUILD_ID=$CI_COMMIT_SHORT_SHA
+ANSI_COLOR="38;2;61;174;233"
+HOME_URL="https://kde.org/linux"
+DOCUMENTATION_URL="https://community.kde.org/KDE_Linux"
+SUPPORT_URL="https://kde.org/support/"
+BUG_REPORT_URL="https://invent.kde.org/kde-linux/kde-linux/-/issues"
+PRIVACY_POLICY_URL="https://kde.org/privacypolicy-apps/"
+LOGO=/usr/share/pixmaps/kde-linux-logo.png
+IMAGE_ID=snow-linux
+IMAGE_VERSION=$IMAGE_VERSION
+# KDE Linux specific keys.
+KDE_LINUX_COMMIT_SHA=$CI_COMMIT_SHA
+KDE_LINUX_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA
+KDE_LINUX_CI_URL=$CI_PIPELINE_URL
+KDE_LINUX_SYSUPDATE_ENDPOINT=sysupdate/v2
+EOF
+[ -f /usr/lib/os-release ] || false
+cat /usr/lib/os-release
+
+
+# Fetch latest distrobox config from the kde-linux-containers repo
+mkdir -p /usr/share/distrobox
+curl --output /usr/share/distrobox/distrobox.conf \
+  'https://invent.kde.org/api/v4/projects/19899/repository/files/distrobox.conf/raw'
+
+# # Enable samba usershare
+# cat <<- EOF >> /etc/samba/smb.conf
+# [global]
+#   usershare path = /var/lib/samba/usershares
+#   usershare max shares = 100
+#   usershare allow guests = yes
+#   usershare owner only = yes
+# EOF
+
+# Set default shell as zsh for new users
+sed -i 's%^SHELL=/usr/bin/bash%SHELL=/usr/bin/zsh%' /etc/default/useradd
+
+
+
+cd /tmp
+/usr/bin/_kde-linux-rebuild-efi
+mv -v ./*.efi /
