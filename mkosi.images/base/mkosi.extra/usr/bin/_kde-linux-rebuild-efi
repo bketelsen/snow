@@ -18,14 +18,21 @@ if [ -z "$kernel_version" ]; then
   exit 1
 fi
 
-# NOTE: plymouth MUST be after systemd as per the wiki!
-cat <<- EOF > mkinitcpio.conf
-MODULES=(overlay)
-BINARIES=()
-FILES=()
-HOOKS=(base systemd modconf kms keyboard block sd-encrypt filesystems fsck systemd-extension plymouth microcode)
+# Configure initramfs-tools for Debian
+# Create a temporary initramfs.conf with our settings
+cat <<- EOF > /tmp/initramfs.conf
+MODULES=most
+COMPRESS=zstd
+COMPRESSLEVEL=1
 EOF
 
+# create /etc/initramfs-tools if it doesn't exist
+mkdir -p /etc/initramfs-tools
+touch /etc/initramfs-tools/modules
+# Add required modules to /etc/initramfs-tools/modules if not already present
+grep -qxF 'overlay' /etc/initramfs-tools/modules 2>/dev/null || echo 'overlay' >> /etc/initramfs-tools/modules
+
+# Generate initramfs for live system
 echo "rw \
   systemd.volatile=overlay systemd.firstboot=false systemd.hostname=kde-linux kde-linux.live=1 plasma.live.user=live \
   lsm=landlock,lockdown,yama,integrity,apparmor,bpf \
@@ -34,7 +41,11 @@ echo "rw \
   nohz=on nohz_full=all \
   rcu_nocbs=all rcutree.enable_rcu_lazy=1 \
   vt.global_cursor_default=0 quiet splash loglevel=3" > cmdline
-mkinitcpio --config mkinitcpio.conf --generate initrd --kernel "$kernel_version"
+
+# Use update-initramfs to generate the initrd
+update-initramfs -c -k "$kernel_version" -b .
+mv "initrd.img-${kernel_version}" initrd
+
 ukify build \
   --linux /usr/lib/modules/$kernel_version/vmlinuz \
   --initrd initrd \
@@ -62,7 +73,11 @@ echo "rw rootflags=subvol=@system,compress=zstd:1 \
   nohz=on nohz_full=all \
   rcu_nocbs=all rcutree.enable_rcu_lazy=1 \
   vt.global_cursor_default=0 quiet splash loglevel=3" > cmdline
-mkinitcpio --config mkinitcpio.conf --generate initrd --kernel "$kernel_version"
+
+# Generate initramfs for installed system
+update-initramfs -c -k "$kernel_version" -b .
+mv "initrd.img-${kernel_version}" initrd
+
 ukify build \
   --linux /usr/lib/modules/$kernel_version/vmlinuz \
   --initrd initrd \
