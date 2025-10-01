@@ -16,8 +16,8 @@ echo "$IMAGE_ID"
 IMAGE_DIR="${OUTPUTDIR}/${IMAGE_ID}_${IMAGE_VERSION}"
 
 
-MAIN_UKI=kde-linux.efi               # Output main UKI path
-LIVE_UKI=live.efi          # Output live UKI path
+MAIN_UKI="${OUTPUTDIR}/kde-linux.efi"               # Output main UKI path
+LIVE_UKI="${OUTPUTDIR}/live.efi"          # Output live UKI path
 DEBUG_TAR=${IMAGE_ID}_debug-x86-64.tar # Output debug archive path (.zst will be added)
 # SUPER WARNING: Do not use the more common foo.erofs.caibx suffix. It breaks stuff!
 # https://github.com/systemd/systemd/issues/38605
@@ -63,6 +63,8 @@ mkfs.fat -F 32 esp.raw
 
 # Mount it to esp.raw.mnt.
 mkdir -p esp.raw.mnt # The -p prevents failure if directory already exists
+
+### THIS Breaks in mkosi
 mount esp.raw esp.raw.mnt
 
 # Copy everything from /usr/share/factory/boot into esp.raw.mnt.
